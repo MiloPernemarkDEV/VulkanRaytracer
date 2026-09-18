@@ -1,4 +1,5 @@
 #include <iostream>
+#include "renderer.h"
 
 #ifdef _WIN32 
 class Application {
@@ -8,6 +9,7 @@ public:
 	void run(); 
 	void end(); 
 private:
+	VulkanContext* vulkanContext; 
 };
 
 #else 

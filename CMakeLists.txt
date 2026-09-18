@@ -35,6 +35,7 @@ PRIVATE
 	src/window.cpp
 	src/application.cpp
 	src/arena.cpp
+	src/renderer.cpp
 
 PUBLIC
 	FILE_SET includes
@@ -48,6 +49,7 @@ PUBLIC
 	include/arena.h
 	include/config.h
 	include/pch.h
+	include/renderer.h
 )
 
 target_include_directories(raytracer

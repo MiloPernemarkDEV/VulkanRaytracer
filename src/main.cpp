@@ -1,5 +1,4 @@
 #include "pch.h"
-
 #include <application.h>
 
 #ifdef _WIN32 
