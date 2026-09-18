@@ -6,7 +6,8 @@
 
 class Arena {
 public:
-	Arena(std::size_t size); 
+	Arena(std::size_t size);
+	~Arena(); 
 
 	template<typename T, typename... Args>
 	T* add(Args&&... args) {
@@ -25,6 +26,8 @@ public:
 		}
 		throw std::runtime_error("Not enough space to allocate object!");
 	}
+
+
 private:
 	std::size_t totalSize;
 	std::size_t offset;
