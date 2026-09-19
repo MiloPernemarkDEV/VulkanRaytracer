@@ -161,7 +161,7 @@ namespace VulkanCore {
 				constexpr VkQueueFlags required = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT;
 				if ((flags & required) == required) {
 					hasQueues = true;
-					break; // Found it, we can stop looking
+					break;
 				}
 			}
 			return hasDiscrete && hasVersion && hasQueues && hasFeatures;
@@ -187,6 +187,15 @@ namespace VulkanCore {
 			}
 
 			throw std::runtime_error("Failed to find a suitable gpu for the application!");
+		}
+
+		void createLogicalDevice(VulkanContext& ctx) {
+			u32 count{};
+			vkGetPhysicalDeviceQueueFamilyProperties2(ctx.physicalDevice, &count, nullptr);
+
+			std::vector<VkQueueFamilyProperties2> queueFamilies(count);
+			vkGetPhysicalDeviceQueueFamilyProperties2(ctx.physicalDevice, &count, queueFamilies.data());
+
 		}
 
 
