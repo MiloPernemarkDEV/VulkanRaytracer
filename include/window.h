@@ -4,6 +4,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include "vulkan_core.h"
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -15,6 +16,8 @@ namespace Window {
     void pollEvents();
     std::vector<const char*> getVkExtensions();
     bool close();
+    void createSurface(VulkanContext& ctx);
+    void destroySurface(VulkanContext& ctx);
 }
 
 #else 

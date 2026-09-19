@@ -79,4 +79,23 @@ namespace Window
 	{
 		return g_CloseWindow;
 	}
+
+	void createSurface(VulkanContext& ctx) {
+		VkSurfaceKHR surface = VK_NULL_HANDLE;
+
+		VkWin32SurfaceCreateInfoKHR info{};
+		info.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+		info.pNext = nullptr;
+		info.flags = 0;
+		info.hinstance = g_hInstance;
+		info.hwnd = g_hWnd;
+
+		if (vkCreateWin32SurfaceKHR(ctx.instance, &info, nullptr, &ctx.surface) != VK_SUCCESS) {
+			throw std::runtime_error("Failed to create window surface!");
+		}
+	}
+
+	void destroySurface(VulkanContext& ctx) {
+		vkDestroySurfaceKHR(ctx.instance, ctx.surface, nullptr);
+	}
 }

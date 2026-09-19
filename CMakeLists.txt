@@ -59,6 +59,7 @@ PUBLIC
 	include/pch.h
 	include/renderer.h
 	include/vulkan_core.h
+	include/vertex.h
 )
 
 target_include_directories(raytracer

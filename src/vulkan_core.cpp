@@ -1,9 +1,10 @@
 #include "pch.h"
 #include "vulkan_core.h"
 #include "config.h"
+#include "window.h"
+
 #include "defines.h"
 #include <iostream>
-#include <ranges>
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 			VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -11,7 +12,10 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 			const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 			void* pUserData) {
 
-	if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+	if (messageSeverity & (VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
+		| VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT
+		| VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT
+		| VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)) {
 		std::cerr << "[Vulkan Validation]: " << pCallbackData->pMessage << std::endl;
 	}
 
@@ -56,9 +60,9 @@ namespace VulkanCore {
 
 		void setupInstanceCreateInfo(VkInstanceCreateInfo& info, const VkApplicationInfo& appInfo, std::vector<const char*>& enabledLayers) {
 			info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-			info.enabledExtensionCount = static_cast<u32>(Config::REQUIRED_VK_EXTENSIONS.size());
+			info.enabledExtensionCount = static_cast<u32>(Config::REQUIRED_INSTANCE_EXTENSIONS.size());
 			info.enabledLayerCount = static_cast<u32>(enabledLayers.size());
-			info.ppEnabledExtensionNames = Config::REQUIRED_VK_EXTENSIONS.data();
+			info.ppEnabledExtensionNames = Config::REQUIRED_INSTANCE_EXTENSIONS.data();
 			info.ppEnabledLayerNames = enabledLayers.data();
 			info.pApplicationInfo = &appInfo;
 		}
@@ -66,7 +70,7 @@ namespace VulkanCore {
 		void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& info) {
 			info = {};
 			info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-			info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+			info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
 			info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 			info.pfnUserCallback = debugCallback;
 		}
@@ -79,7 +83,9 @@ namespace VulkanCore {
 
 			const auto func = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT"));
 			if (func != nullptr) {
-				func(instance, &info, nullptr, &debugMessenger);
+				if (func(instance, &info, nullptr, &debugMessenger) != VK_SUCCESS) {
+					throw std::runtime_error("Failed to setup debug messenger when creating validation layers!");
+				}
 			}
 		}
 
@@ -100,7 +106,6 @@ namespace VulkanCore {
 			VkInstanceCreateInfo info{};
 			std::vector<const char*> enabledLayers = getEnabledLayers();
 			setupInstanceCreateInfo(info, appInfo, enabledLayers);
-
 
 			VkDebugUtilsMessengerCreateInfoEXT debugInfo{};
 			if (Config::ENABLE_VALIDATION_LAYERS) {
@@ -139,7 +144,7 @@ namespace VulkanCore {
 						(rtPipelineFeatures.rayTracingPipeline == VK_TRUE);
 		}
 
-		bool isDeviceSuitable(VkPhysicalDevice physicalDevice) {
+		bool isDeviceSuitable(VkPhysicalDevice physicalDevice, u32& queueFamilyIndex) {
 			VkPhysicalDeviceProperties2 properties{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
 			vkGetPhysicalDeviceProperties2(physicalDevice, &properties);
 
@@ -161,6 +166,7 @@ namespace VulkanCore {
 				constexpr VkQueueFlags required = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT;
 				if ((flags & required) == required) {
 					hasQueues = true;
+					queueFamilyIndex = i;
 					break;
 				}
 			}
@@ -179,38 +185,89 @@ namespace VulkanCore {
 			std::vector<VkPhysicalDevice> physicalDevices(count);
 			vkEnumeratePhysicalDevices(ctx.instance, &count, physicalDevices.data());
 
+			u32 queueFamilyIndex{};
+
 			for (auto device : physicalDevices) {
-				if (isDeviceSuitable(device)) {
+				if (isDeviceSuitable(device, queueFamilyIndex)) {
 					ctx.physicalDevice = device;
 					return;
 				}
 			}
 
+			ctx.queueFamilyIndex = queueFamilyIndex;
+
 			throw std::runtime_error("Failed to find a suitable gpu for the application!");
 		}
 
 		void createLogicalDevice(VulkanContext& ctx) {
-			u32 count{};
-			vkGetPhysicalDeviceQueueFamilyProperties2(ctx.physicalDevice, &count, nullptr);
+			float queuePriority = 1.0f;
 
-			std::vector<VkQueueFamilyProperties2> queueFamilies(count);
-			vkGetPhysicalDeviceQueueFamilyProperties2(ctx.physicalDevice, &count, queueFamilies.data());
+			VkDeviceQueueCreateInfo queueCreateInfo = {};
+			queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+			queueCreateInfo.queueFamilyIndex = ctx.queueFamilyIndex;
+			queueCreateInfo.queueCount = 1;
+			queueCreateInfo.pQueuePriorities = &queuePriority;
 
+			VkPhysicalDeviceRayTracingPipelineFeaturesKHR rtPipelineFeatures{};
+			rtPipelineFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+			rtPipelineFeatures.rayTracingPipeline = VK_TRUE;
+
+			VkPhysicalDeviceAccelerationStructureFeaturesKHR accelFeatures{};
+			accelFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+			accelFeatures.accelerationStructure = VK_TRUE;
+			accelFeatures.pNext = &rtPipelineFeatures;
+
+			VkPhysicalDeviceVulkan13Features features13{};
+			features13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+			features13.dynamicRendering = VK_TRUE;
+			features13.synchronization2 = VK_TRUE;
+			features13.pNext = &accelFeatures;
+
+			VkPhysicalDeviceVulkan12Features features12{};
+			features12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+			features12.bufferDeviceAddress = VK_TRUE;
+			features12.descriptorBindingPartiallyBound = VK_TRUE;
+			features12.runtimeDescriptorArray = VK_TRUE;
+			features12.pNext = &features13;
+
+			VkPhysicalDeviceFeatures2 features2{};
+			features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+			features2.features.samplerAnisotropy = VK_TRUE;
+			features2.pNext = &features12;
+
+			VkDeviceCreateInfo createInfo{};
+			createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+			createInfo.pNext = &features2;
+			createInfo.queueCreateInfoCount = 1;
+			createInfo.pQueueCreateInfos = &queueCreateInfo;
+			createInfo.enabledExtensionCount = static_cast<uint32_t>(Config::REQUIRED_DEVICE_EXTENSIONS.size());
+			createInfo.ppEnabledExtensionNames = Config::REQUIRED_DEVICE_EXTENSIONS.data();
+			createInfo.pEnabledFeatures = nullptr; // handled by pMext chain
+
+			if (vkCreateDevice(ctx.physicalDevice, &createInfo, nullptr, &ctx.device) != VK_SUCCESS) {
+				throw std::runtime_error("Failed to create logical device!");
+			}
 		}
 	} // namespace
 
 	bool init(VulkanContext& ctx)
 	{
 		createInstance(ctx);
+		Window::createSurface(ctx);
+
 		createValidationLayers(ctx.instance, ctx.debugMessenger);
 		pickPhysicalDevice(ctx);
+		createLogicalDevice(ctx);
 
 		return true;
 	}
 
 	void cleanup(VulkanContext& ctx) {
 
+		vkDestroyDevice(ctx.device, nullptr);
 		destroyValidationLayers(ctx.instance, ctx.debugMessenger);
+
+		Window::destroySurface(ctx);
 		vkDestroyInstance(ctx.instance, nullptr);
 	}
 
