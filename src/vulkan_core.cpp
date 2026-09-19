@@ -13,9 +13,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 			void* pUserData) {
 
 	if (messageSeverity & (VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
-		| VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT
-		| VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT
-		| VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)) {
+		| VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)) {
 		std::cerr << "[Vulkan Validation]: " << pCallbackData->pMessage << std::endl;
 	}
 

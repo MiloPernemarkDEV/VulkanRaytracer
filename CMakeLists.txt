@@ -10,7 +10,8 @@ project(raytracer)
 # Create a target which is a collection of properties that will be associated with it 
 add_executable(raytracer WIN32
 		src/gpu_export.cpp
-		include/vertex.h)
+		include/vertex.h
+		include/win32_helper.h)
 
 # Generate compile_commands.json  
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "export compile commands")
@@ -60,6 +61,7 @@ PUBLIC
 	include/renderer.h
 	include/vulkan_core.h
 	include/vertex.h
+	include/win32_helper.h
 )
 
 target_include_directories(raytracer

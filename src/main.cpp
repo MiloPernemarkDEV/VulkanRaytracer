@@ -3,8 +3,11 @@
 
 #ifdef _WIN32 
 #include <windows.h>
+#include "win32_helper.h"
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow){
+	AttachConsoleToWin32GuiProcess();
+
 	Application app; 
 	try {
 		if (!app.init(nCmdShow)) {

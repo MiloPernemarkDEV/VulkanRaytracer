@@ -5,6 +5,8 @@
 #include <windowsx.h>
 #include <shobjidl.h>
 #include <wrl/client.h>
+#include <consoleapi.h>
+
 #endif
 
 #include <vulkan/vulkan.h>
