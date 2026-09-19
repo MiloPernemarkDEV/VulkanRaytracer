@@ -3,6 +3,7 @@
 #include "config.h"
 #include "defines.h"
 #include <iostream>
+#include <ranges>
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 			VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -28,16 +29,16 @@ namespace VulkanCore {
 
 			std::vector<const char*> enabledLayers;
 			if (Config::ENABLE_VALIDATION_LAYERS) {
-				for (const char* targetName : Config::REQUIRED_VK_LAYERS) {
+				for (const char* targetLayer : Config::REQUIRED_VK_LAYERS) {
 					bool found = false;
 					for (const auto& layerProperties : availableLayers) {
-						if (strcmp(targetName, layerProperties.layerName) == 0) {
+						if (strcmp(targetLayer, layerProperties.layerName) == 0) {
 							found = true;
 							break;
 						}
 					}
 					if (found) {
-						enabledLayers.push_back(targetName);
+						enabledLayers.push_back(targetLayer);
 					}
 				}
 			}
@@ -47,10 +48,10 @@ namespace VulkanCore {
 		void setupApplicationInfo(VkApplicationInfo& appInfo) {
 			appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 			appInfo.pApplicationName = "Raytracer";
-			appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+			appInfo.applicationVersion = Config::APPLICATION_VERSION;
 			appInfo.pEngineName = "No Engine";
-			appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-			appInfo.apiVersion = VK_API_VERSION_1_3;
+			appInfo.engineVersion = Config::APPLICATION_VERSION;
+			appInfo.apiVersion = Config::REQUIRED_VULKAN_VERSION;
 		}
 
 		void setupInstanceCreateInfo(VkInstanceCreateInfo& info, const VkApplicationInfo& appInfo, std::vector<const char*>& enabledLayers) {
@@ -115,12 +116,87 @@ namespace VulkanCore {
 			}
 		}
 
+		bool checkHasFeatures(VkPhysicalDevice physicalDevice) {
+				VkPhysicalDeviceBufferDeviceAddressFeatures bufferAddressFeatures{};
+				bufferAddressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES;
+
+				VkPhysicalDeviceAccelerationStructureFeaturesKHR accelFeatures{};
+				accelFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+				accelFeatures.pNext = &bufferAddressFeatures;
+
+				VkPhysicalDeviceRayTracingPipelineFeaturesKHR rtPipelineFeatures{};
+				rtPipelineFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+				rtPipelineFeatures.pNext = &accelFeatures;
+
+				VkPhysicalDeviceFeatures2 deviceFeatures2{};
+				deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+				deviceFeatures2.pNext = &rtPipelineFeatures;
+
+				vkGetPhysicalDeviceFeatures2(physicalDevice, &deviceFeatures2);
+
+				return (bufferAddressFeatures.bufferDeviceAddress == VK_TRUE) &&
+					    (accelFeatures.accelerationStructure == VK_TRUE) &&
+						(rtPipelineFeatures.rayTracingPipeline == VK_TRUE);
+		}
+
+		bool isDeviceSuitable(VkPhysicalDevice physicalDevice) {
+			VkPhysicalDeviceProperties2 properties{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+			vkGetPhysicalDeviceProperties2(physicalDevice, &properties);
+
+			const bool hasDiscrete = properties.properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+			const bool hasVersion = properties.properties.apiVersion >= Config::REQUIRED_VULKAN_VERSION;
+			bool hasFeatures = checkHasFeatures(physicalDevice);
+
+			u32 count{};
+			vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, &count, nullptr);
+
+			std::vector<VkQueueFamilyProperties2> queueFamilies(count, {VK_STRUCTURE_TYPE_QUEUE_FAMILY_PROPERTIES_2});
+			vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, &count, queueFamilies.data());
+
+			bool hasQueues{false};
+			for (size_t i = 0; i < queueFamilies.size(); i++) {
+				const VkQueueFlags flags = queueFamilies[i].queueFamilyProperties.queueFlags;
+
+				// graphics queue ensures we have transfer queue too
+				constexpr VkQueueFlags required = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT;
+				if ((flags & required) == required) {
+					hasQueues = true;
+					break; // Found it, we can stop looking
+				}
+			}
+			return hasDiscrete && hasVersion && hasQueues && hasFeatures;
+		}
+
+
+		void pickPhysicalDevice(VulkanContext& ctx) {
+			u32 count{};
+			vkEnumeratePhysicalDevices(ctx.instance, &count, nullptr);
+
+			if (count == 0) {
+				throw std::runtime_error("Failed to find any gpu at all!");
+			}
+
+			std::vector<VkPhysicalDevice> physicalDevices(count);
+			vkEnumeratePhysicalDevices(ctx.instance, &count, physicalDevices.data());
+
+			for (auto device : physicalDevices) {
+				if (isDeviceSuitable(device)) {
+					ctx.physicalDevice = device;
+					return;
+				}
+			}
+
+			throw std::runtime_error("Failed to find a suitable gpu for the application!");
+		}
+
+
 	} // namespace
 
 	bool init(VulkanContext& ctx)
 	{
 		createInstance(ctx);
 		createValidationLayers(ctx.instance, ctx.debugMessenger);
+		pickPhysicalDevice(ctx);
 
 		return true;
 	}

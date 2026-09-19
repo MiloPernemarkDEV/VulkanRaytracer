@@ -8,10 +8,15 @@ cmake_minimum_required(VERSION 3.23)
 project(raytracer)
 
 # Create a target which is a collection of properties that will be associated with it 
-add_executable(raytracer WIN32)
+add_executable(raytracer WIN32
+		src/gpu_export.cpp)
 
 # Generate compile_commands.json  
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "export compile commands")
+
+# set cpp standard
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Vulkan
 find_package(Vulkan REQUIRED)
@@ -37,6 +42,7 @@ PRIVATE
 	src/arena.cpp
 	src/renderer.cpp
 	src/vulkan_core.cpp
+	src/gpu_export.cpp
 
 PUBLIC
 	FILE_SET includes
