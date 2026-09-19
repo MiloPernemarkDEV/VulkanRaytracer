@@ -197,8 +197,6 @@ namespace VulkanCore {
 			vkGetPhysicalDeviceQueueFamilyProperties2(ctx.physicalDevice, &count, queueFamilies.data());
 
 		}
-
-
 	} // namespace
 
 	bool init(VulkanContext& ctx)

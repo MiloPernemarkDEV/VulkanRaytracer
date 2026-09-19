@@ -9,7 +9,8 @@ project(raytracer)
 
 # Create a target which is a collection of properties that will be associated with it 
 add_executable(raytracer WIN32
-		src/gpu_export.cpp)
+		src/gpu_export.cpp
+		include/vertex.h)
 
 # Generate compile_commands.json  
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "export compile commands")
