@@ -190,11 +190,10 @@ namespace VulkanCore {
 			for (auto device : physicalDevices) {
 				if (isDeviceSuitable(device, queueFamilyIndex)) {
 					ctx.physicalDevice = device;
+					ctx.queueFamilyIndex = queueFamilyIndex;
 					return;
 				}
 			}
-
-			ctx.queueFamilyIndex = queueFamilyIndex;
 
 			throw std::runtime_error("Failed to find a suitable gpu for the application!");
 		}
@@ -248,6 +247,138 @@ namespace VulkanCore {
 				throw std::runtime_error("Failed to create logical device!");
 			}
 		}
+
+		VkSurfaceFormatKHR chooseSurfaceFormatAndColorSpace(const std::vector<VkSurfaceFormatKHR>& surfaceFormats) {
+			for (int i = 0; i < surfaceFormats.size(); i++) {
+				if ((surfaceFormats[i].format == VK_FORMAT_B8G8R8A8_SRGB) &&
+					surfaceFormats[i].colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+					return surfaceFormats[i];
+				}
+			}
+			return surfaceFormats[0];
+		}
+
+		VkPresentModeKHR choosePresentMode(const std::vector<VkPresentModeKHR>& presentModes) {
+			for (int i = 0; i < presentModes.size(); i++) {
+				if (presentModes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
+					return presentModes[i];
+				}
+			}
+			return presentModes[0];
+		}
+
+		u32 chooseNumImages(const VkSurfaceCapabilitiesKHR& capabilities) {
+			const u32 requestedCount = capabilities.minImageCount + 1;
+			u32 result = 0;
+			if ((capabilities.maxImageCount > 0) && (requestedCount > capabilities.maxImageCount)) {
+				result = capabilities.maxImageCount;
+			}
+			else {
+				result = requestedCount;
+			}
+			return result;
+		}
+
+		VkImageView createImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags,
+			VkImageViewType viewType, u32 layerCount, u32 mipLevels) {
+
+			VkImageViewCreateInfo info{};
+			info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+			info.pNext = nullptr;
+			info.flags = 0;
+			info.image = image;
+			info.viewType = viewType;
+			info.format = format;
+			info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+			info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+			info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+			info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+			info.subresourceRange.aspectMask = aspectFlags;
+			info.subresourceRange.baseMipLevel = 0;
+			info.subresourceRange.levelCount = mipLevels;
+			info.subresourceRange.baseArrayLayer = 0;
+			info.subresourceRange.layerCount = layerCount;
+
+			VkImageView view;
+			if (vkCreateImageView(device, &info, nullptr, &view) != VK_SUCCESS) {
+				throw std::runtime_error("Failed to create image view!");
+			}
+			return view;
+		}
+
+		void createSwapchain(VulkanContext& ctx) {
+			VkSurfaceCapabilitiesKHR capabilities{};
+			vkGetPhysicalDeviceSurfaceCapabilitiesKHR(ctx.physicalDevice, ctx.surface, &capabilities);
+
+			const u32 numImages = chooseNumImages(capabilities);
+
+			u32 presentModeCount{};
+			vkGetPhysicalDeviceSurfacePresentModesKHR(ctx.physicalDevice, ctx.surface, &presentModeCount, nullptr);
+			std::vector<VkPresentModeKHR> presentModes(presentModeCount);
+			vkGetPhysicalDeviceSurfacePresentModesKHR(ctx.physicalDevice, ctx.surface, &presentModeCount, presentModes.data());
+
+			const VkPresentModeKHR presentMode = choosePresentMode(presentModes);
+
+			u32 surfaceFormatCount{};
+			vkGetPhysicalDeviceSurfaceFormatsKHR(ctx.physicalDevice, ctx.surface, &surfaceFormatCount, nullptr);
+			std::vector<VkSurfaceFormatKHR> surfaceFormats(surfaceFormatCount);
+			vkGetPhysicalDeviceSurfaceFormatsKHR(ctx.physicalDevice, ctx.surface, &surfaceFormatCount, surfaceFormats.data());
+
+			const VkSurfaceFormatKHR surfaceFormat = chooseSurfaceFormatAndColorSpace(surfaceFormats);
+
+			VkSwapchainCreateInfoKHR info{};
+			info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+			info.pNext = nullptr;
+			info.flags = 0;
+			info.surface = ctx.surface;
+			info.minImageCount = numImages;
+			info.imageFormat = surfaceFormat.format;
+			info.imageColorSpace = surfaceFormat.colorSpace;
+			info.imageExtent = Window::getExtent2D(capabilities, Window::getHandle());
+			info.imageArrayLayers = 1;
+			info.imageUsage = (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT);
+			info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+			info.queueFamilyIndexCount = 1;
+			info.pQueueFamilyIndices = &ctx.queueFamilyIndex;
+			info.preTransform = capabilities.currentTransform;
+			info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+			info.presentMode = presentMode;
+			info.clipped = VK_TRUE;
+
+			if (vkCreateSwapchainKHR(ctx.device, &info, nullptr, &ctx.swapchainState.swapchain) != VK_SUCCESS) {
+				throw std::runtime_error("Failed to create swapchain!");
+			}
+
+			u32 numSwapChainImages{};
+			if (vkGetSwapchainImagesKHR(ctx.device, ctx.swapchainState.swapchain, &numSwapChainImages, nullptr) != VK_SUCCESS) {
+				throw std::runtime_error("Failed to get swap chain images!");
+			}
+
+			ctx.swapchainState.images.resize(numSwapChainImages);
+
+			if (vkGetSwapchainImagesKHR(ctx.device, ctx.swapchainState.swapchain,
+				&numSwapChainImages, ctx.swapchainState.images.data()) != VK_SUCCESS) {
+				throw std::runtime_error("Failed to get swap chain images!");
+			}
+
+			ctx.swapchainState.views.resize(numSwapChainImages);
+
+			const s32 layerCount = 1;
+			const s32 mipLevels = 1;
+
+			for (size_t i = 0; i < ctx.swapchainState.views.size(); ++i) {
+				ctx.swapchainState.views[i] = createImageView(ctx.device, ctx.swapchainState.images[i], surfaceFormat.format,
+					VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_VIEW_TYPE_2D, layerCount, mipLevels);
+			}
+		}
+
+		void destroyImageViews(VulkanContext& ctx) {
+			for (size_t i = 0; i < ctx.swapchainState.views.size(); ++i) {
+				vkDestroyImageView(ctx.device, ctx.swapchainState.views[i], nullptr);
+			}
+		}
+
+
 	} // namespace
 
 	bool init(VulkanContext& ctx)
@@ -258,17 +389,19 @@ namespace VulkanCore {
 		createValidationLayers(ctx.instance, ctx.debugMessenger);
 		pickPhysicalDevice(ctx);
 		createLogicalDevice(ctx);
+		createSwapchain(ctx);
 
 		return true;
 	}
 
 	void cleanup(VulkanContext& ctx) {
 
+		destroyImageViews(ctx);
+		vkDestroySwapchainKHR(ctx.device, ctx.swapchainState.swapchain, nullptr);
 		vkDestroyDevice(ctx.device, nullptr);
 		destroyValidationLayers(ctx.instance, ctx.debugMessenger);
 
 		Window::destroySurface(ctx);
 		vkDestroyInstance(ctx.instance, nullptr);
 	}
-
 }

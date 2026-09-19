@@ -3,6 +3,7 @@
 #include "window.h"
 #include "windowsx.h"
 #include "config.h"
+#include <algorithm>
 
 static HWND g_hWnd;
 static HINSTANCE g_hInstance;
@@ -19,8 +20,7 @@ namespace Window
 	}
 
 	LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-		switch (msg)
-		{
+		switch (msg) {
 			HANDLE_MSG(hwnd, WM_DESTROY, OnDestroy);
 
 
@@ -97,5 +97,40 @@ namespace Window
 
 	void destroySurface(VulkanContext& ctx) {
 		vkDestroySurfaceKHR(ctx.instance, ctx.surface, nullptr);
+	}
+
+	VkExtent2D getExtent2D(const VkSurfaceCapabilitiesKHR& capabilities,HWND hwnd) {
+		if (capabilities.currentExtent.width != UINT32_MAX) {
+			return capabilities.currentExtent;
+		}
+
+		RECT rect{};
+		if (!GetClientRect(hwnd, &rect)) {
+			return capabilities.currentExtent;
+		}
+
+		const u32 width = static_cast<u32>(rect.right - rect.left);
+
+		const u32 height = static_cast<u32>(rect.bottom - rect.top);
+
+		if (width == 0 || height == 0) {
+			return { 0, 0 };
+		}
+
+		VkExtent2D extent{ width, height };
+
+		extent.width = clamp(extent.width,
+			capabilities.minImageExtent.width,
+			capabilities.maxImageExtent.width);
+
+		extent.height = clamp(extent.height,
+			capabilities.minImageExtent.height,
+			capabilities.maxImageExtent.height);
+
+		return extent;
+	}
+
+	HWND getHandle() {
+		return g_hWnd;
 	}
 }

@@ -5,6 +5,7 @@
 #ifdef _WIN32
 #include <windows.h>
 #include "vulkan_core.h"
+#include "defines.h"
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -18,6 +19,9 @@ namespace Window {
     bool close();
     void createSurface(VulkanContext& ctx);
     void destroySurface(VulkanContext& ctx);
+
+    VkExtent2D getExtent2D(const VkSurfaceCapabilitiesKHR& capabilities, HWND hwnd);
+    HWND getHandle();
 }
 
 #else 

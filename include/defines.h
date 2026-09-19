@@ -16,3 +16,10 @@ using f64 = double;
 constexpr int operator""_MB(unsigned long long int x) {
 	return x * 1024 * 1024;
 }
+
+template <typename T>
+constexpr const T& clamp(const T& v, const T& lo, const T& hi) {
+	if (v < lo) return lo;
+	if (hi < v) return hi;
+	return v;
+}
