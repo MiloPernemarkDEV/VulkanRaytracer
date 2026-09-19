@@ -1,5 +1,5 @@
 #include <iostream>
-#include "renderer.h"
+#include "vulkan_core.h"
 
 #ifdef _WIN32 
 class Application {
@@ -9,7 +9,7 @@ public:
 	void run(); 
 	void end(); 
 private:
-	VulkanContext* vulkanContext; 
+	VulkanContext* vulkanContext = nullptr;
 };
 
 #else 

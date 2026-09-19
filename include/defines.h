@@ -12,4 +12,7 @@ using u64 = uint64_t;
 
 using f32 = float;
 using f64 = double; 
-     
+
+constexpr int operator""_MB(unsigned long long int x) {
+	return x * 1024 * 1024;
+}

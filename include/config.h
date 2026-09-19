@@ -6,6 +6,8 @@
 
 namespace Config
 {
+	constexpr auto GLOBAL_ARENA_SIZE = 100_MB;
+
 	/* Window configuration */
 	constexpr s32 WINDOW_WIDTH = 1280;
 	constexpr s32 WINDOW_HEIGHT = 720;
@@ -27,4 +29,5 @@ namespace Config
 	};
 
 	constexpr bool ENABLE_VALIDATION_LAYERS = true;
+	
 }

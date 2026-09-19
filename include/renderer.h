@@ -1,11 +1,9 @@
 #pragma once 
 
 #include <vulkan/vulkan.h>
-
-struct VulkanContext {
-	VkInstance instance = VK_NULL_HANDLE;
-};
+#include "vulkan_core.h"
 
 namespace Renderer {
 	bool init(VulkanContext& ctx); 
+	void terminate(VulkanContext& ctx);
 }

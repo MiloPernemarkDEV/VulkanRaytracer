@@ -36,6 +36,7 @@ PRIVATE
 	src/application.cpp
 	src/arena.cpp
 	src/renderer.cpp
+	src/vulkan_core.cpp
 
 PUBLIC
 	FILE_SET includes
@@ -50,6 +51,7 @@ PUBLIC
 	include/config.h
 	include/pch.h
 	include/renderer.h
+	include/vulkan_core.h
 )
 
 target_include_directories(raytracer
