@@ -6,10 +6,12 @@ The project is primarily a learning project focused on understanding Vulkan and 
 
 ## Current Progress
 
+* [x] build system
 * [x] Win32 abstraction
 * [x] Vulkan initialization
 * [x] Physical/logical device selection
 * [x] Swapchain
+* [x] draw command submission
 
 ## Goals
 
