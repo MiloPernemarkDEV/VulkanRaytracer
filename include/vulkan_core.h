@@ -1,6 +1,14 @@
 #pragma once
 
 #include "defines.h"
+#include "vulkan_commands.h"
+#include "config.h"
+
+struct FrameState {
+	VkCommandPool commandPool;
+	VkCommandBuffer mainCommandBuffer;
+
+};
 
 struct SwapchainState {
 	VkSwapchainKHR swapchain = VK_NULL_HANDLE;
@@ -13,13 +21,20 @@ struct VulkanContext {
 	VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 	VkDevice device = VK_NULL_HANDLE;
+
 	u32 queueFamilyIndex = UINT32_MAX;
+	VkQueue graphicsQueue = VK_NULL_HANDLE;
+
 	VkSurfaceKHR surface = VK_NULL_HANDLE;
 
 	SwapchainState swapchainState;
+	u32 currentFrame = 0;
+	std::array<FrameState, Config::FRAME_OVERLAP> frameStates;
 };
 
 namespace VulkanCore {
-	bool init(VulkanContext& ctx);
+	void init(VulkanContext& ctx);
 	void cleanup(VulkanContext& ctx);
+
+	[[nodiscard]] FrameState& getCurrentFrame(VulkanContext& ctx);
 }

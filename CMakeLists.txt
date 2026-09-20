@@ -7,18 +7,17 @@ cmake_minimum_required(VERSION 3.23)
 # and build tooling
 project(raytracer)
 
-# Create a target which is a collection of properties that will be associated with it 
-add_executable(raytracer WIN32
-		src/gpu_export.cpp
-		include/vertex.h
-		include/win32_helper.h)
-
 # Generate compile_commands.json  
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "export compile commands")
 
 # set cpp standard
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Create a target which is a collection of properties that will be associated with it
+add_executable(raytracer WIN32
+		src/vulkan_commands.cpp)
 
 # Vulkan
 find_package(Vulkan REQUIRED)
@@ -29,6 +28,7 @@ PRIVATE
 	_UNICODE
 	WIN32_LEAN_AND_MEAN
 	GLM_ENABLE_EXPERIMENTAL
+	_CRT_USE_BUILTIN_OFFSETOF
 )
 
 target_precompile_headers(raytracer 
@@ -45,6 +45,7 @@ PRIVATE
 	src/renderer.cpp
 	src/vulkan_core.cpp
 	src/gpu_export.cpp
+	src/vulkan_commands.cpp
 
 PUBLIC
 	FILE_SET includes
@@ -62,6 +63,7 @@ PUBLIC
 	include/vulkan_core.h
 	include/vertex.h
 	include/win32_helper.h
+	include/vulkan_commands.h
 )
 
 target_include_directories(raytracer

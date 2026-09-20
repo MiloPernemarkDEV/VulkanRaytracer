@@ -30,7 +30,7 @@ namespace VulkanCore {
 			vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
 			std::vector<const char*> enabledLayers;
-			if (Config::ENABLE_VALIDATION_LAYERS) {
+			if constexpr (Config::ENABLE_VALIDATION_LAYERS) {
 				for (const char* targetLayer : Config::REQUIRED_VK_LAYERS) {
 					bool found = false;
 					for (const auto& layerProperties : availableLayers) {
@@ -47,13 +47,15 @@ namespace VulkanCore {
 			return enabledLayers;
 		}
 
-		void setupApplicationInfo(VkApplicationInfo& appInfo) {
+		constexpr VkApplicationInfo makeApplicationInfo() {
+			VkApplicationInfo appInfo{};
 			appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-			appInfo.pApplicationName = "Raytracer";
+			appInfo.pApplicationName = Config::APP_NAME;
 			appInfo.applicationVersion = Config::APPLICATION_VERSION;
-			appInfo.pEngineName = "No Engine";
+			appInfo.pEngineName = Config::ENGINE_NAME;
 			appInfo.engineVersion = Config::APPLICATION_VERSION;
 			appInfo.apiVersion = Config::REQUIRED_VULKAN_VERSION;
+			return appInfo;
 		}
 
 		void setupInstanceCreateInfo(VkInstanceCreateInfo& info, const VkApplicationInfo& appInfo, std::vector<const char*>& enabledLayers) {
@@ -65,7 +67,7 @@ namespace VulkanCore {
 			info.pApplicationInfo = &appInfo;
 		}
 
-		void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& info) {
+		constexpr void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& info) {
 			info = {};
 			info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 			info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
@@ -73,8 +75,8 @@ namespace VulkanCore {
 			info.pfnUserCallback = debugCallback;
 		}
 
-		void createValidationLayers(const VkInstance instance, VkDebugUtilsMessengerEXT& debugMessenger) {
-			if (!Config::ENABLE_VALIDATION_LAYERS) return;
+		void createValidationLayers(VkInstance instance, VkDebugUtilsMessengerEXT& debugMessenger) {
+			if constexpr (!Config::ENABLE_VALIDATION_LAYERS) return;
 
 			VkDebugUtilsMessengerCreateInfoEXT info{};
 			populateDebugMessengerCreateInfo(info);
@@ -87,7 +89,7 @@ namespace VulkanCore {
 			}
 		}
 
-		void destroyValidationLayers(const VkInstance instance, const VkDebugUtilsMessengerEXT debugMessenger) {
+		void destroyValidationLayers(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger) {
 			if (debugMessenger == VK_NULL_HANDLE) return;
 
 			const auto func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(
@@ -98,15 +100,14 @@ namespace VulkanCore {
 		}
 
 		void createInstance(VulkanContext& ctx) {
-			VkApplicationInfo appInfo{};
-			setupApplicationInfo(appInfo);
+			constexpr VkApplicationInfo appInfo = makeApplicationInfo();
 
 			VkInstanceCreateInfo info{};
 			std::vector<const char*> enabledLayers = getEnabledLayers();
 			setupInstanceCreateInfo(info, appInfo, enabledLayers);
 
 			VkDebugUtilsMessengerCreateInfoEXT debugInfo{};
-			if (Config::ENABLE_VALIDATION_LAYERS) {
+			if constexpr (Config::ENABLE_VALIDATION_LAYERS) {
 				populateDebugMessengerCreateInfo(debugInfo);
 				info.pNext = &debugInfo;
 			}
@@ -244,6 +245,8 @@ namespace VulkanCore {
 			if (vkCreateDevice(ctx.physicalDevice, &createInfo, nullptr, &ctx.device) != VK_SUCCESS) {
 				throw std::runtime_error("Failed to create logical device!");
 			}
+
+			vkGetDeviceQueue(ctx.device, ctx.queueFamilyIndex, 0, &ctx.graphicsQueue);
 		}
 
 		VkSurfaceFormatKHR chooseSurfaceFormatAndColorSpace(const std::vector<VkSurfaceFormatKHR>& surfaceFormats) {
@@ -265,7 +268,7 @@ namespace VulkanCore {
 			return presentModes[0];
 		}
 
-		u32 chooseNumImages(const VkSurfaceCapabilitiesKHR& capabilities) {
+		constexpr u32 chooseNumImages(const VkSurfaceCapabilitiesKHR& capabilities) {
 			const u32 requestedCount = capabilities.minImageCount + 1;
 			u32 result = 0;
 			if ((capabilities.maxImageCount > 0) && (requestedCount > capabilities.maxImageCount)) {
@@ -337,7 +340,7 @@ namespace VulkanCore {
 			info.imageUsage = (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT);
 			info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 			info.queueFamilyIndexCount = 1;
-			info.pQueueFamilyIndices = &ctx.queueFamilyIndex;
+			info.pQueueFamilyIndices = nullptr;
 			info.preTransform = capabilities.currentTransform;
 			info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 			info.presentMode = presentMode;
@@ -376,10 +379,9 @@ namespace VulkanCore {
 			}
 		}
 
+	} // unnamed namespace
 
-	} // namespace
-
-	bool init(VulkanContext& ctx)
+	void init(VulkanContext& ctx)
 	{
 		createInstance(ctx);
 		Window::createSurface(ctx);
@@ -389,7 +391,6 @@ namespace VulkanCore {
 		createLogicalDevice(ctx);
 		createSwapchain(ctx);
 
-		return true;
 	}
 
 	void cleanup(VulkanContext& ctx) {
@@ -402,4 +403,9 @@ namespace VulkanCore {
 		Window::destroySurface(ctx);
 		vkDestroyInstance(ctx.instance, nullptr);
 	}
-}
+
+	FrameState& getCurrentFrame(VulkanContext& ctx) {
+		return ctx.frameStates[ctx.currentFrame % Config::FRAME_OVERLAP];
+	}
+
+} // namespace VulkanCore

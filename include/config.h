@@ -7,6 +7,8 @@
 namespace Config
 {
 	constexpr auto GLOBAL_ARENA_SIZE = 100_MB;
+	constexpr auto APP_NAME = "Raytracer";
+	constexpr auto ENGINE_NAME = "INeedAjobEngine";
 
 	/* Window configuration */
 	constexpr s32 WINDOW_WIDTH = 1280;
@@ -40,4 +42,5 @@ namespace Config
 #endif
 	constexpr auto REQUIRED_VULKAN_VERSION = VK_API_VERSION_1_3;
 	constexpr auto APPLICATION_VERSION = VK_MAKE_VERSION(1, 0, 0);
+	constexpr u32 FRAME_OVERLAP = 2;
 }

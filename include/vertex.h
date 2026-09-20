@@ -14,7 +14,7 @@ struct Vertex {
     glm::vec3 tangent;
     glm::vec3 bitangent;
 
-    static VkVertexInputBindingDescription getBindingDescription() {
+    constexpr static VkVertexInputBindingDescription getBindingDescription() {
         VkVertexInputBindingDescription description = {};
         description.binding = 0;
         description.stride = sizeof(Vertex);
@@ -22,7 +22,7 @@ struct Vertex {
         return description;
     }
 
-    static std::array<VkVertexInputAttributeDescription, 6> getAttributeDescriptions() {
+    constexpr static std::array<VkVertexInputAttributeDescription, 6> getAttributeDescriptions() {
         std::array<VkVertexInputAttributeDescription, 6> attributeDescriptions{};
 
         /* Position (location 0) */
