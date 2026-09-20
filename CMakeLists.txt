@@ -46,6 +46,7 @@ PRIVATE
 	src/vulkan_core.cpp
 	src/gpu_export.cpp
 	src/vulkan_commands.cpp
+	src/vulkan_sync.cpp
 
 PUBLIC
 	FILE_SET includes
@@ -64,6 +65,7 @@ PUBLIC
 	include/vertex.h
 	include/win32_helper.h
 	include/vulkan_commands.h
+	include/vulkan_sync.h
 )
 
 target_include_directories(raytracer

@@ -22,6 +22,10 @@ constexpr const T& clamp(const T& v, const T& lo, const T& hi) {
 	return v;
 }
 
+constexpr u64 secondsToNano(u64 seconds) {
+    return seconds * 1000000000ULL;
+}
+
 #define VK_CHECK(function, errormsg) \
     do { \
         if ((function) != VK_SUCCESS) { \

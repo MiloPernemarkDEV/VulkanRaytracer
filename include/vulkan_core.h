@@ -7,6 +7,9 @@
 struct FrameState {
 	VkCommandPool commandPool;
 	VkCommandBuffer mainCommandBuffer;
+	VkSemaphore swapchainSemaphore;
+	VkSemaphore renderSemaphore;
+	VkFence renderFence;
 
 };
 

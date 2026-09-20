@@ -24,6 +24,15 @@ namespace VulkanCommands {
         }
     } // unnamed namespace
 
+    constexpr VkCommandBufferBeginInfo makeCommandBufferBeginInfo(VkCommandBufferUsageFlags flags) {
+        VkCommandBufferBeginInfo info{};
+        info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        info.pNext = nullptr;
+        info.pInheritanceInfo = nullptr;
+        info.flags = flags;
+        return info;
+    }
+
     void init(VulkanContext &ctx) {
         const VkCommandPoolCreateInfo commandPoolInfo = makeCommandPoolInfo(
             ctx.queueFamilyIndex, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
