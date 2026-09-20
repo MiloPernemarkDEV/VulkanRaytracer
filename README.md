@@ -17,7 +17,7 @@ The goal is to keep the renderer relatively small and focused while gaining a de
 
 Feel free to ask me questions or follow along!
 
-## How to Build and Run the Renderer
+## How to Build and Run the Application
 
 ### Dependencies and Environment
 
