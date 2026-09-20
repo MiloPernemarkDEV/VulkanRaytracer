@@ -17,14 +17,14 @@ The goal is to keep the renderer relatively small and focused while gaining a de
 
 Feel free to ask me questions or follow along!
 
-## How to Build and Run the Renderer
+## How to Build and Run the Application
 
 ### Dependencies and Environment
 
 The renderer currently requires:
 
 * **Windows**
-* **Vulkan SDK** https://vulkan.lunarg.com/sdk/home
+* <strong>Vulkan SDK</strong> <a href="https://vulkan.lunarg.com/sdk/home" target="_blank" rel="noopener noreferrer">https://vulkan.lunarg.com/sdk/home</a>
 * A GPU with **Vulkan 1.3** and **hardware ray tracing** support
 * **CMake 3.23** or newer
 * A **C++20** compatible compiler
