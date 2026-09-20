@@ -25,7 +25,7 @@ namespace VulkanSync {
         const VkFenceCreateInfo fenceCreateInfo = makeFenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
         VkSemaphoreCreateInfo semaphoreCreateInfo = makeSemaphoreCreateInfo();
 
-        for (int i = 0; i < Config::FRAME_OVERLAP; i++) {
+        for (int i = 0; i < Config::frameOverlap; i++) {
             VK_CHECK(vkCreateFence(ctx.device, &fenceCreateInfo, nullptr, &ctx.frameStates[i].renderFence),
                 "Failed to create fence!");
 
@@ -37,7 +37,7 @@ namespace VulkanSync {
     }
 
     void destroy(VulkanContext& ctx) {
-        for (size_t i = 0; i < Config::FRAME_OVERLAP; i++) {
+        for (size_t i = 0; i < Config::frameOverlap; i++) {
             vkDestroyFence(ctx.device, ctx.frameStates[i].renderFence, nullptr);
             vkDestroySemaphore(ctx.device, ctx.frameStates[i].swapchainSemaphore, nullptr);
             vkDestroySemaphore(ctx.device, ctx.frameStates[i].renderSemaphore, nullptr);

@@ -1,46 +1,71 @@
 #pragma once
 
 #include "defines.h"
+
 #include <array>
 #include <vulkan/vulkan.h>
 
 namespace Config
 {
-	constexpr auto GLOBAL_ARENA_SIZE = 100_MB;
-	constexpr auto APP_NAME = "Raytracer";
-	constexpr auto ENGINE_NAME = "INeedAjobEngine";
+    // =========================================================================
+    // Application & Engine Info
+    // =========================================================================
+    constexpr auto globalArenaSize = 100_MB;
+    constexpr auto appName         = "Raytracer";
+    constexpr auto engineName      = "INeedAjobEngine";
 
-	/* Window configuration */
-	constexpr s32 WINDOW_WIDTH = 1280;
-	constexpr s32 WINDOW_HEIGHT = 720;
-	constexpr auto WINDOW_TITLE = "Raytracer";
+    // =========================================================================
+    // Window Configuration
+    // =========================================================================
+    constexpr s32  windowWidth  = 1280;
+    constexpr s32  windowHeight = 720;
+    constexpr auto windowTitle  = "Raytracer";
 
-	/* Paths and folders */
-	constexpr auto ASSETS_FOLDER_NAME = "assets";
+    // =========================================================================
+    // File Paths & Directories
+    // =========================================================================
+    constexpr auto assetFolderName = "assets";
 
-	/* Renderer configuration */
-	constexpr std::array<const char*, 3> REQUIRED_INSTANCE_EXTENSIONS = {
-		VK_KHR_SURFACE_EXTENSION_NAME,
-		VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
-		VK_EXT_DEBUG_UTILS_EXTENSION_NAME
-	 };
+    // =========================================================================
+    // Vulkan & Renderer Settings
+    // =========================================================================
+    constexpr auto requiredVulkanVersion = VK_API_VERSION_1_3;
+    constexpr auto applicationVersion    = VK_MAKE_VERSION(1, 0, 0);
+    constexpr u32  frameOverlap          = 2;
+    constexpr auto shaderEntryName       = "main";
+    constexpr float standardLineWidth   = 1.0f;
 
-	constexpr std::array<const char*, 4> REQUIRED_DEVICE_EXTENSIONS = {
-		VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-		VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
-		VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
-		VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME
-	 };
-
-	constexpr std::array<const char*, 1> REQUIRED_VK_LAYERS = {
-		"VK_LAYER_KHRONOS_validation"
-	};
 #ifdef NDEBUG
-	constexpr bool ENABLE_VALIDATION_LAYERS = false;
+    constexpr bool enableValidationLayers = false;
 #else
-	constexpr bool ENABLE_VALIDATION_LAYERS = true;
+    constexpr bool enableValidationLayers = true;
 #endif
-	constexpr auto REQUIRED_VULKAN_VERSION = VK_API_VERSION_1_3;
-	constexpr auto APPLICATION_VERSION = VK_MAKE_VERSION(1, 0, 0);
-	constexpr u32 FRAME_OVERLAP = 2;
+
+    // =========================================================================
+    // Extensions, Layers & Dynamic State
+    // =========================================================================
+    constexpr std::array<const char*, 3> requiredInstanceExtensions = {
+        VK_KHR_SURFACE_EXTENSION_NAME,
+        VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
+        VK_EXT_DEBUG_UTILS_EXTENSION_NAME
+    };
+
+    constexpr std::array<const char*, 4> requiredDeviceExtensions = {
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+        VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
+        VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
+        VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME
+    };
+
+    constexpr std::array<const char*, 1> requiredVulkanLayers = {
+        "VK_LAYER_KHRONOS_validation"
+    };
+
+    // Pipeline state that can be mutated at draw time without pipeline recreation
+    constexpr std::array dynamicStates = {
+        VK_DYNAMIC_STATE_VIEWPORT,
+        VK_DYNAMIC_STATE_SCISSOR,
+        VK_DYNAMIC_STATE_CULL_MODE,
+        VK_DYNAMIC_STATE_LINE_WIDTH
+    };
 }

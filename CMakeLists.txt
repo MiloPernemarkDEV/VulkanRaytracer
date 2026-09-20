@@ -20,7 +20,8 @@ add_subdirectory(shaders)
 # Create a target which is a collection of properties that will be associated with it
 add_executable(raytracer WIN32
 		src/vulkan_commands.cpp
-		src/vulkan_image.cpp)
+		src/vulkan_image.cpp
+		src/vulkan_pipelines.cpp)
 
 add_dependencies(raytracer shaders)
 
@@ -53,6 +54,7 @@ PRIVATE
 	src/vulkan_commands.cpp
 	src/vulkan_sync.cpp
 	src/vulkan_image.cpp
+	src/shader.cpp
 
 PUBLIC
 	FILE_SET includes
@@ -73,6 +75,7 @@ PUBLIC
 	include/vulkan_commands.h
 	include/vulkan_sync.h
 	include/vulkan_image.h
+	include/shader.h
 )
 
 target_include_directories(raytracer

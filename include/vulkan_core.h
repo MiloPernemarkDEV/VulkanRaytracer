@@ -10,13 +10,13 @@ struct FrameState {
 	VkSemaphore swapchainSemaphore;
 	VkSemaphore renderSemaphore;
 	VkFence renderFence;
-
 };
 
 struct SwapchainState {
 	VkSwapchainKHR swapchain = VK_NULL_HANDLE;
 	std::vector<VkImage> images;
 	std::vector<VkImageView> views;
+	VkExtent2D extent;
 	VkFormat imageFormat = VK_FORMAT_UNDEFINED;
 };
 
@@ -33,7 +33,7 @@ struct VulkanContext {
 
 	SwapchainState swapchainState;
 	u32 currentFrame = 0;
-	std::array<FrameState, Config::FRAME_OVERLAP> frameStates;
+	std::array<FrameState, Config::frameOverlap> frameStates;
 };
 
 namespace VulkanCore {

@@ -28,7 +28,7 @@ namespace VulkanCommands {
         const VkCommandPoolCreateInfo commandPoolInfo = makeCommandPoolInfo(
             ctx.queueFamilyIndex, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
-        for (size_t i = 0; i < Config::FRAME_OVERLAP; i++) {
+        for (size_t i = 0; i < Config::frameOverlap; i++) {
             VK_CHECK(vkCreateCommandPool(ctx.device, &commandPoolInfo, nullptr,&ctx.frameStates[i].commandPool),
                 "failed to create command pool!"
             );
@@ -42,7 +42,7 @@ namespace VulkanCommands {
     }
 
     void cleanup(VulkanContext &ctx) {
-        for (size_t i = 0; i < Config::FRAME_OVERLAP; i++) {
+        for (size_t i = 0; i < Config::frameOverlap; i++) {
             vkDestroyCommandPool(ctx.device, ctx.frameStates[i].commandPool, nullptr);
         }
     }

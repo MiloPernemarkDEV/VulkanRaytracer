@@ -37,6 +37,6 @@ private:
 };
 
 inline Arena& GetArena() {
-	static Arena s_Arena(Config::GLOBAL_ARENA_SIZE);
+	static Arena s_Arena(Config::globalArenaSize);
 	return s_Arena;
 }

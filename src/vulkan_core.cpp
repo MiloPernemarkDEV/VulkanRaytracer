@@ -29,8 +29,8 @@ namespace VulkanCore {
 			vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
 			std::vector<const char*> enabledLayers;
-			if constexpr (Config::ENABLE_VALIDATION_LAYERS) {
-				for (const char* targetLayer : Config::REQUIRED_VK_LAYERS) {
+			if constexpr (Config::enableValidationLayers) {
+				for (const char* targetLayer : Config::requiredVulkanLayers) {
 					bool found = false;
 					for (const auto& layerProperties : availableLayers) {
 						if (strcmp(targetLayer, layerProperties.layerName) == 0) {
@@ -49,19 +49,19 @@ namespace VulkanCore {
 		constexpr VkApplicationInfo makeApplicationInfo() {
 			VkApplicationInfo appInfo{};
 			appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-			appInfo.pApplicationName = Config::APP_NAME;
-			appInfo.applicationVersion = Config::APPLICATION_VERSION;
-			appInfo.pEngineName = Config::ENGINE_NAME;
-			appInfo.engineVersion = Config::APPLICATION_VERSION;
-			appInfo.apiVersion = Config::REQUIRED_VULKAN_VERSION;
+			appInfo.pApplicationName = Config::appName;
+			appInfo.applicationVersion = Config::applicationVersion;
+			appInfo.pEngineName = Config::engineName;
+			appInfo.engineVersion = Config::applicationVersion;
+			appInfo.apiVersion = Config::requiredVulkanVersion;
 			return appInfo;
 		}
 
 		void setupInstanceCreateInfo(VkInstanceCreateInfo& info, const VkApplicationInfo& appInfo, std::vector<const char*>& enabledLayers) {
 			info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-			info.enabledExtensionCount = static_cast<u32>(Config::REQUIRED_INSTANCE_EXTENSIONS.size());
+			info.enabledExtensionCount = static_cast<u32>(Config::requiredInstanceExtensions.size());
 			info.enabledLayerCount = static_cast<u32>(enabledLayers.size());
-			info.ppEnabledExtensionNames = Config::REQUIRED_INSTANCE_EXTENSIONS.data();
+			info.ppEnabledExtensionNames = Config::requiredInstanceExtensions.data();
 			info.ppEnabledLayerNames = enabledLayers.data();
 			info.pApplicationInfo = &appInfo;
 		}
@@ -75,7 +75,7 @@ namespace VulkanCore {
 		}
 
 		void createValidationLayers(VkInstance instance, VkDebugUtilsMessengerEXT& debugMessenger) {
-			if constexpr (!Config::ENABLE_VALIDATION_LAYERS) return;
+			if constexpr (!Config::enableValidationLayers) return;
 
 			VkDebugUtilsMessengerCreateInfoEXT info{};
 			populateDebugMessengerCreateInfo(info);
@@ -104,7 +104,7 @@ namespace VulkanCore {
 			setupInstanceCreateInfo(info, appInfo, enabledLayers);
 
 			VkDebugUtilsMessengerCreateInfoEXT debugInfo{};
-			if constexpr (Config::ENABLE_VALIDATION_LAYERS) {
+			if constexpr (Config::enableValidationLayers) {
 				populateDebugMessengerCreateInfo(debugInfo);
 				info.pNext = &debugInfo;
 			}
@@ -143,7 +143,7 @@ namespace VulkanCore {
 			vkGetPhysicalDeviceProperties2(physicalDevice, &properties);
 
 			const bool hasDiscrete = properties.properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
-			const bool hasVersion = properties.properties.apiVersion >= Config::REQUIRED_VULKAN_VERSION;
+			const bool hasVersion = properties.properties.apiVersion >= Config::requiredVulkanVersion;
 			bool hasFeatures = checkHasFeatures(physicalDevice);
 
 			u32 count{};
@@ -233,8 +233,8 @@ namespace VulkanCore {
 			createInfo.pNext = &features2;
 			createInfo.queueCreateInfoCount = 1;
 			createInfo.pQueueCreateInfos = &queueCreateInfo;
-			createInfo.enabledExtensionCount = static_cast<uint32_t>(Config::REQUIRED_DEVICE_EXTENSIONS.size());
-			createInfo.ppEnabledExtensionNames = Config::REQUIRED_DEVICE_EXTENSIONS.data();
+			createInfo.enabledExtensionCount = static_cast<uint32_t>(Config::requiredDeviceExtensions.size());
+			createInfo.ppEnabledExtensionNames = Config::requiredDeviceExtensions.data();
 			createInfo.pEnabledFeatures = nullptr; // handled by pMext chain
 
 			if (vkCreateDevice(ctx.physicalDevice, &createInfo, nullptr, &ctx.device) != VK_SUCCESS) {
@@ -326,6 +326,7 @@ namespace VulkanCore {
 			if (extent.width == 0 || extent.height == 0) {
 				return;
 			}
+			ctx.swapchainState.extent = extent;
 
 			VkSwapchainKHR oldSwapchain = ctx.swapchainState.swapchain;
 
@@ -416,7 +417,7 @@ namespace VulkanCore {
 	}
 
 	FrameState& getCurrentFrame(VulkanContext& ctx) {
-		return ctx.frameStates[ctx.currentFrame % Config::FRAME_OVERLAP];
+		return ctx.frameStates[ctx.currentFrame % Config::frameOverlap];
 	}
 
 } // namespace VulkanCore

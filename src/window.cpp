@@ -44,7 +44,7 @@ namespace Window
 		RegisterClassW(&wc);
 
 		g_hWnd = CreateWindowEx(0, CLASS_NAME, L"raytracer", WS_OVERLAPPEDWINDOW,
-			CW_USEDEFAULT, CW_USEDEFAULT, Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT,
+			CW_USEDEFAULT, CW_USEDEFAULT, Config::windowWidth, Config::windowHeight,
 			nullptr, nullptr, g_hInstance, nullptr);
 
 		ShowWindow(g_hWnd, nCmdShow);
