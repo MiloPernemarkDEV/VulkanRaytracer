@@ -83,9 +83,7 @@ namespace VulkanCore {
 
 			const auto func = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT"));
 			if (func != nullptr) {
-				if (func(instance, &info, nullptr, &debugMessenger) != VK_SUCCESS) {
-					throw std::runtime_error("Failed to setup debug messenger when creating validation layers!");
-				}
+				VK_CHECK(func(instance, &info, nullptr, &debugMessenger), "Failed to setup debug messenger when creating validation layers!");
 			}
 		}
 
@@ -115,9 +113,7 @@ namespace VulkanCore {
 				info.pNext = nullptr;
 			}
 
-			if (vkCreateInstance(&info, nullptr, &ctx.instance) != VK_SUCCESS) {
-				throw std::runtime_error("Failed to create Vulkan instance!");
-			}
+			VK_CHECK(vkCreateInstance(&info, nullptr, &ctx.instance), "Failed to create Vulkan instance!");
 		}
 
 		bool checkHasFeatures(VkPhysicalDevice physicalDevice) {
@@ -301,9 +297,8 @@ namespace VulkanCore {
 			info.subresourceRange.layerCount = layerCount;
 
 			VkImageView view;
-			if (vkCreateImageView(device, &info, nullptr, &view) != VK_SUCCESS) {
-				throw std::runtime_error("Failed to create image view!");
-			}
+			VK_CHECK(vkCreateImageView(device, &info, nullptr, &view), "Failed to create image view!");
+
 			return view;
 		}
 
@@ -346,21 +341,15 @@ namespace VulkanCore {
 			info.presentMode = presentMode;
 			info.clipped = VK_TRUE;
 
-			if (vkCreateSwapchainKHR(ctx.device, &info, nullptr, &ctx.swapchainState.swapchain) != VK_SUCCESS) {
-				throw std::runtime_error("Failed to create swapchain!");
-			}
+			VK_CHECK(vkCreateSwapchainKHR(ctx.device, &info, nullptr, &ctx.swapchainState.swapchain), "Failed to create swapchain!");
 
 			u32 numSwapChainImages{};
-			if (vkGetSwapchainImagesKHR(ctx.device, ctx.swapchainState.swapchain, &numSwapChainImages, nullptr) != VK_SUCCESS) {
-				throw std::runtime_error("Failed to get swap chain images!");
-			}
+			VK_CHECK(vkGetSwapchainImagesKHR(ctx.device, ctx.swapchainState.swapchain, &numSwapChainImages, nullptr), "Failed to get swap chain images!");
 
 			ctx.swapchainState.images.resize(numSwapChainImages);
 
-			if (vkGetSwapchainImagesKHR(ctx.device, ctx.swapchainState.swapchain,
-				&numSwapChainImages, ctx.swapchainState.images.data()) != VK_SUCCESS) {
-				throw std::runtime_error("Failed to get swap chain images!");
-			}
+			VK_CHECK(vkGetSwapchainImagesKHR(ctx.device, ctx.swapchainState.swapchain,
+				&numSwapChainImages, ctx.swapchainState.images.data()), "Failed to get swap chain images!");
 
 			ctx.swapchainState.views.resize(numSwapChainImages);
 

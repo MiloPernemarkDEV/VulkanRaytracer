@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstdint>
-
 using s16 = int16_t; 
 using s32 = int32_t;
 using s64 = int64_t;
@@ -23,3 +21,10 @@ constexpr const T& clamp(const T& v, const T& lo, const T& hi) {
 	if (hi < v) return hi;
 	return v;
 }
+
+#define VK_CHECK(function, errormsg) \
+    do { \
+        if ((function) != VK_SUCCESS) { \
+            throw std::runtime_error(errormsg); \
+        } \
+    } while (0)
