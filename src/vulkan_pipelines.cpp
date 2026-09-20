@@ -7,7 +7,8 @@
 #include "defines.h"
 
 namespace VulkanPipelines {
-    void initFilled(VulkanContext& ctx) {
+    namespace {
+        void initFilled(VulkanContext& ctx) {
         const auto vertCode = Shader::readFile("shaders/spirv/triangle.vs.spv");
         const auto fragCode = Shader::readFile("shaders/spirv/triangle.fs.spv");
 
@@ -46,7 +47,6 @@ namespace VulkanPipelines {
         inputAssembly.pNext = nullptr;
         inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         inputAssembly.primitiveRestartEnable = VK_FALSE;
-
 
         VkViewport viewport{};
         viewport.x = 0.0f;
@@ -111,6 +111,7 @@ namespace VulkanPipelines {
         pipelineLayoutInfo.setLayoutCount = 0;
         pipelineLayoutInfo.pushConstantRangeCount = 0;
 
+        // Dont forget to destroy
         VK_CHECK(vkCreatePipelineLayout(
             ctx.device,
             &pipelineLayoutInfo,
@@ -118,8 +119,20 @@ namespace VulkanPipelines {
             &pipelineLayout
         ), "Failed to create pipeline layout!");
 
-
         vkDestroyShaderModule(ctx.device, vertModule, nullptr);
         vkDestroyShaderModule(ctx.device, fragModule, nullptr);
     }
-}
+
+    } // Unnamed namespace
+
+    void init(VulkanContext& ctx) {
+        initFilled(ctx);
+
+
+    }
+
+    void destroy(VulkanContext& ctx) {
+
+    }
+
+} // namespace VulkanPipelines

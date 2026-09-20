@@ -3,5 +3,6 @@
 struct VulkanContext;
 
 namespace VulkanPipelines {
-    void initFilled(VulkanContext& ctx);
+    void init(VulkanContext& ctx);
+    void destroy(VulkanContext& ctx);
 }
