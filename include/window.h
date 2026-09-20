@@ -17,6 +17,7 @@ namespace Window {
     void pollEvents();
     std::vector<const char*> getVkExtensions();
     bool close();
+    bool isMinimized();
     void createSurface(VulkanContext& ctx);
     void destroySurface(VulkanContext& ctx);
 

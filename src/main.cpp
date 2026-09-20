@@ -8,8 +8,8 @@
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow){
 	AttachConsoleToWin32GuiProcess();
 
-	Application app; 
 	try {
+		Application app;
 		if (!app.init(nCmdShow)) {
 			return -1;
 		}

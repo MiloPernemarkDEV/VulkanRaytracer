@@ -17,6 +17,7 @@ struct SwapchainState {
 	VkSwapchainKHR swapchain = VK_NULL_HANDLE;
 	std::vector<VkImage> images;
 	std::vector<VkImageView> views;
+	VkFormat imageFormat = VK_FORMAT_UNDEFINED;
 };
 
 struct VulkanContext {
@@ -38,6 +39,7 @@ struct VulkanContext {
 namespace VulkanCore {
 	void init(VulkanContext& ctx);
 	void cleanup(VulkanContext& ctx);
+	void recreateSwapchain(VulkanContext& ctx);
 
 	[[nodiscard]] FrameState& getCurrentFrame(VulkanContext& ctx);
 }

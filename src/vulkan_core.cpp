@@ -12,8 +12,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 			const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 			void* pUserData) {
 
-	if (messageSeverity & (VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
-		| VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)) {
+	if (messageSeverity & (VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)) {
 		std::cerr << "[Vulkan Validation]: " << pCallbackData->pMessage << std::endl;
 	}
 
@@ -302,6 +301,8 @@ namespace VulkanCore {
 			return view;
 		}
 
+		void destroyImageViews(VulkanContext& ctx);
+
 		void createSwapchain(VulkanContext& ctx) {
 			VkSurfaceCapabilitiesKHR capabilities{};
 			vkGetPhysicalDeviceSurfaceCapabilitiesKHR(ctx.physicalDevice, ctx.surface, &capabilities);
@@ -321,6 +322,12 @@ namespace VulkanCore {
 			vkGetPhysicalDeviceSurfaceFormatsKHR(ctx.physicalDevice, ctx.surface, &surfaceFormatCount, surfaceFormats.data());
 
 			const VkSurfaceFormatKHR surfaceFormat = chooseSurfaceFormatAndColorSpace(surfaceFormats);
+			const VkExtent2D extent = Window::getExtent2D(capabilities, Window::getHandle());
+			if (extent.width == 0 || extent.height == 0) {
+				return;
+			}
+
+			VkSwapchainKHR oldSwapchain = ctx.swapchainState.swapchain;
 
 			VkSwapchainCreateInfoKHR info{};
 			info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -330,18 +337,28 @@ namespace VulkanCore {
 			info.minImageCount = numImages;
 			info.imageFormat = surfaceFormat.format;
 			info.imageColorSpace = surfaceFormat.colorSpace;
-			info.imageExtent = Window::getExtent2D(capabilities, Window::getHandle());
+			info.imageExtent = extent;
 			info.imageArrayLayers = 1;
 			info.imageUsage = (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT);
 			info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-			info.queueFamilyIndexCount = 1;
+			info.queueFamilyIndexCount = 0;
 			info.pQueueFamilyIndices = nullptr;
 			info.preTransform = capabilities.currentTransform;
 			info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 			info.presentMode = presentMode;
 			info.clipped = VK_TRUE;
+			info.oldSwapchain = oldSwapchain;
 
-			VK_CHECK(vkCreateSwapchainKHR(ctx.device, &info, nullptr, &ctx.swapchainState.swapchain), "Failed to create swapchain!");
+			VkSwapchainKHR newSwapchain = VK_NULL_HANDLE;
+			VK_CHECK(vkCreateSwapchainKHR(ctx.device, &info, nullptr, &newSwapchain), "Failed to create swapchain!");
+
+			if (oldSwapchain != VK_NULL_HANDLE) {
+				destroyImageViews(ctx);
+				vkDestroySwapchainKHR(ctx.device, oldSwapchain, nullptr);
+			}
+
+			ctx.swapchainState.swapchain = newSwapchain;
+			ctx.swapchainState.imageFormat = surfaceFormat.format;
 
 			u32 numSwapChainImages{};
 			VK_CHECK(vkGetSwapchainImagesKHR(ctx.device, ctx.swapchainState.swapchain, &numSwapChainImages, nullptr), "Failed to get swap chain images!");
@@ -391,6 +408,11 @@ namespace VulkanCore {
 
 		Window::destroySurface(ctx);
 		vkDestroyInstance(ctx.instance, nullptr);
+	}
+
+	void recreateSwapchain(VulkanContext& ctx) {
+		vkDeviceWaitIdle(ctx.device);
+		createSwapchain(ctx);
 	}
 
 	FrameState& getCurrentFrame(VulkanContext& ctx) {

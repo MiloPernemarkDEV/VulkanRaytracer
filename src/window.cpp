@@ -80,6 +80,20 @@ namespace Window
 		return g_CloseWindow;
 	}
 
+	bool isMinimized()
+	{
+		if (g_hWnd == nullptr || IsIconic(g_hWnd)) {
+			return true;
+		}
+
+		RECT rect{};
+		if (!GetClientRect(g_hWnd, &rect)) {
+			return true;
+		}
+
+		return (rect.right - rect.left) == 0 || (rect.bottom - rect.top) == 0;
+	}
+
 	void createSurface(VulkanContext& ctx) {
 		VkSurfaceKHR surface = VK_NULL_HANDLE;
 

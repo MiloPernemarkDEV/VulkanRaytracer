@@ -37,7 +37,11 @@ namespace VulkanSync {
     }
 
     void destroy(VulkanContext& ctx) {
-
+        for (size_t i = 0; i < Config::FRAME_OVERLAP; i++) {
+            vkDestroyFence(ctx.device, ctx.frameStates[i].renderFence, nullptr);
+            vkDestroySemaphore(ctx.device, ctx.frameStates[i].swapchainSemaphore, nullptr);
+            vkDestroySemaphore(ctx.device, ctx.frameStates[i].renderSemaphore, nullptr);
+        }
     }
 
 } // namespace VulkanSync

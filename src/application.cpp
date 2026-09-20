@@ -27,6 +27,10 @@ void Application::run()
 {
 	while (!Window::close()) {
 		Window::pollEvents();
+		if (Window::close() || Window::isMinimized()) {
+			continue;
+		}
+		Renderer::draw(*vulkanContext);
 	}
 }
 

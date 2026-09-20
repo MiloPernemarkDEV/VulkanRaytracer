@@ -15,9 +15,14 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+add_subdirectory(shaders)
+
 # Create a target which is a collection of properties that will be associated with it
 add_executable(raytracer WIN32
-		src/vulkan_commands.cpp)
+		src/vulkan_commands.cpp
+		src/vulkan_image.cpp)
+
+add_dependencies(raytracer shaders)
 
 # Vulkan
 find_package(Vulkan REQUIRED)
@@ -47,6 +52,7 @@ PRIVATE
 	src/gpu_export.cpp
 	src/vulkan_commands.cpp
 	src/vulkan_sync.cpp
+	src/vulkan_image.cpp
 
 PUBLIC
 	FILE_SET includes
@@ -66,6 +72,7 @@ PUBLIC
 	include/win32_helper.h
 	include/vulkan_commands.h
 	include/vulkan_sync.h
+	include/vulkan_image.h
 )
 
 target_include_directories(raytracer
