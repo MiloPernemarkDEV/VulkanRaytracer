@@ -24,7 +24,7 @@ Feel free to ask me questions or follow along!
 The renderer currently requires:
 
 * **Windows**
-* **Vulkan SDK:** [vulkan.lunarg.com/sdk/home](https://vulkan.lunarg.com/sdk/home) *(Ctrl + click to open in new tab)*
+* <strong>Vulkan SDK</strong> <a href="https://vulkan.lunarg.com/sdk/home" target="_blank" rel="noopener noreferrer">https://vulkan.lunarg.com/sdk/home</a>
 * A GPU with **Vulkan 1.3** and **hardware ray tracing** support
 * **CMake 3.23** or newer
 * A **C++20** compatible compiler
