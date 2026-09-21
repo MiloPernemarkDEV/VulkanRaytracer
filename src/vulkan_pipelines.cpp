@@ -168,6 +168,10 @@ namespace VulkanPipelines {
 
             ctx.pipelines.filled = makePipeline(ctx, desc);
         }
+
+        void createWireframePipeline(VulkanContext& ctx) {
+
+        }
     } // Unnamed namespace
 
 

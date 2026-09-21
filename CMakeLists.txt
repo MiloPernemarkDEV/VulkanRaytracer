@@ -45,6 +45,7 @@ add_subdirectory(shaders)
 # Create executable
 add_executable(raytracer WIN32
 		src/vulkan_pipelines.cpp
+		src/ui.cpp
 )
 
 add_dependencies(raytracer shaders)
@@ -80,6 +81,7 @@ target_sources(raytracer
 		src/vulkan_sync.cpp
 		src/vulkan_image.cpp
 		src/shader.cpp
+		src/ui.cpp
 
 		PUBLIC
 		FILE_SET includes
@@ -101,6 +103,7 @@ target_sources(raytracer
 		include/vulkan_sync.h
 		include/vulkan_image.h
 		include/shader.h
+		include/ui.h
 )
 
 target_include_directories(raytracer

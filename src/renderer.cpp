@@ -6,6 +6,8 @@
 #include "vulkan_sync.h"
 #include "vulkan_image.h"
 #include "vulkan_pipelines.h"
+#include <imgui_impl_vulkan.h>
+#include "ui.h"
 
 namespace Renderer {
 	namespace {
@@ -75,6 +77,8 @@ namespace Renderer {
 			VulkanCommands::setupDynamicStates(ctx);
 
 			vkCmdDraw(cmd, 3, 1, 0, 0);
+
+			UI::end(cmd);
 			vkCmdEndRendering(cmd);
 
 			VulkanImage::transitionImage(

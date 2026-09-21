@@ -4,6 +4,7 @@
 #include "window.h"
 #include "renderer.h"
 #include "arena.h"
+#include "ui.h"
 
 #ifdef _WIN32
 Application::Application() {
@@ -17,11 +18,14 @@ bool Application::init(int nCmdShow) {
 
 	if (!Renderer::init(*vulkanContext)) {
 		return false;
-	}	
+	}
+
+	UI::init(Window::getHandle(), *vulkanContext);
 	
 
 	return true;
 }
+
 
 void Application::run()
 {
@@ -30,13 +34,18 @@ void Application::run()
 		if (Window::close() || Window::isMinimized()) {
 			continue;
 		}
+
+		UI::begin();
+		UI::draw();
+
 		Renderer::draw(*vulkanContext);
 	}
 }
 
 void Application::end()
 {
-	Renderer::terminate(*vulkanContext);	
+	UI::shutdown(*vulkanContext);
+	Renderer::terminate(*vulkanContext);
 }
 
 #else 
