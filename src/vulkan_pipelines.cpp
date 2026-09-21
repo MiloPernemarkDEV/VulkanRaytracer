@@ -8,9 +8,25 @@
 
 namespace VulkanPipelines {
     namespace {
-        void initFilled(VulkanContext& ctx) {
-            const auto vertCode = Shader::readFile("shaders/spirv/triangle.vs.spv");
-            const auto fragCode = Shader::readFile("shaders/spirv/triangle.fs.spv");
+        void createPipelineLayout(VulkanContext& ctx) {
+            VkPipelineLayoutCreateInfo info{};
+            info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+            info.pNext = nullptr;
+            info.setLayoutCount = 0;
+            info.pushConstantRangeCount = 0;
+
+            VK_CHECK(vkCreatePipelineLayout(
+                ctx.device,
+                &info,
+                nullptr,
+                &ctx.pipelines.layout),
+                "Failed to create pipeline layout!"
+            );
+        }
+
+        VkPipeline makePipeline(VulkanContext &ctx, const Descriptor &desc) {
+            const auto vertCode = Shader::readFile(desc.vertexShader);
+            const auto fragCode = Shader::readFile(desc.fragmentShader);
 
             VkShaderModule vertModule = Shader::createModule(ctx.device, vertCode);
             VkShaderModule fragModule = Shader::createModule(ctx.device, fragCode);
@@ -38,14 +54,13 @@ namespace VulkanPipelines {
             dynamicState.dynamicStateCount = static_cast<u32>(Config::dynamicStates.size());
             dynamicState.pDynamicStates = Config::dynamicStates.data();
 
-
             VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
             vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
             VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
             inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
             inputAssembly.pNext = nullptr;
-            inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+            inputAssembly.topology = desc.topology;
             inputAssembly.primitiveRestartEnable = VK_FALSE;
 
             VkViewport viewport{};
@@ -70,9 +85,9 @@ namespace VulkanPipelines {
             rasterizer.pNext = nullptr;
             rasterizer.depthClampEnable = VK_FALSE;
             rasterizer.rasterizerDiscardEnable = VK_FALSE;
-            rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
+            rasterizer.polygonMode = desc.polygonMode;
             rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-            rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+            rasterizer.frontFace = desc.frontFace;
             rasterizer.depthBiasEnable = VK_FALSE;
             rasterizer.lineWidth = 1.0f;
 
@@ -83,7 +98,7 @@ namespace VulkanPipelines {
             multisample.sampleShadingEnable = VK_FALSE;
 
             VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-            colorBlendAttachment.blendEnable = VK_TRUE;
+            colorBlendAttachment.blendEnable = desc.blending ? VK_TRUE : VK_FALSE;
             colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
             colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
             colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
@@ -108,6 +123,11 @@ namespace VulkanPipelines {
             renderingInfo.colorAttachmentCount = 1;
             renderingInfo.pColorAttachmentFormats = &ctx.swapchainState.imageFormat;
 
+            VkPipelineDepthStencilStateCreateInfo depthStencil{};
+            depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+            depthStencil.depthTestEnable = desc.depthTest ? VK_TRUE : VK_FALSE;
+            depthStencil.depthWriteEnable = desc.depthWrite ? VK_TRUE : VK_FALSE;
+
             VkGraphicsPipelineCreateInfo pipelineInfo{};
             pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
             pipelineInfo.pNext = &renderingInfo;
@@ -123,46 +143,37 @@ namespace VulkanPipelines {
             pipelineInfo.layout = ctx.pipelines.layout;
             pipelineInfo.renderPass = VK_NULL_HANDLE;
 
-            VK_CHECK(vkCreateGraphicsPipelines(ctx.device, nullptr, 1, &pipelineInfo, nullptr, &ctx.pipelines.filled),
+            VkPipeline newPipeline = VK_NULL_HANDLE;
+            VK_CHECK(vkCreateGraphicsPipelines(ctx.device, nullptr, 1, &pipelineInfo, nullptr, &newPipeline),
                 "Failed to create pipeline!"
             );
 
             vkDestroyShaderModule(ctx.device, vertModule, nullptr);
             vkDestroyShaderModule(ctx.device, fragModule, nullptr);
+
+            return newPipeline;
         }
 
-        void createPipelineLayout(VulkanContext& ctx) {
-            VkPipelineLayoutCreateInfo info{};
-            info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-            info.pNext = nullptr;
-            info.setLayoutCount = 0;
-            info.pushConstantRangeCount = 0;
+        void createFilledPipeline(VulkanContext& ctx) {
+            Descriptor desc{};
+            desc.vertexShader = "shaders/spirv/triangle.vs.spv";
+            desc.fragmentShader = "shaders/spirv/triangle.fs.spv";
+            desc.polygonMode = VK_POLYGON_MODE_FILL;
+            desc.frontFace = VK_FRONT_FACE_CLOCKWISE;
+            desc.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
-            VK_CHECK(vkCreatePipelineLayout(
-                ctx.device,
-                &info,
-                nullptr,
-                &ctx.pipelines.layout),
-                "Failed to create pipeline layout!"
-            );
+            desc.depthTest = false;
+            desc.depthWrite = false;
+            desc.blending = false;
+
+            ctx.pipelines.filled = makePipeline(ctx, desc);
         }
-
     } // Unnamed namespace
 
-    void setupDynamicStates(VulkanContext &ctx) {
-        VkCommandBuffer cmd = VulkanCore::getCurrentFrame(ctx).mainCommandBuffer;
-
-        vkCmdSetViewport(cmd, 0, 1, &ctx.dynamicStates.viewport);
-        vkCmdSetScissor(cmd, 0, 1, &ctx.dynamicStates.scissor);
-        vkCmdSetLineWidth(cmd, Config::standardLineWidth);
-        vkCmdSetCullMode(cmd, VK_CULL_MODE_NONE);
-    }
 
     void init(VulkanContext& ctx) {
         createPipelineLayout(ctx);
-        initFilled(ctx);
-
-
+        createFilledPipeline(ctx);
     }
 
     void destroy(VulkanContext& ctx) {

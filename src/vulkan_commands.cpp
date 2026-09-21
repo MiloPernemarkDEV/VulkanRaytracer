@@ -24,6 +24,16 @@ namespace VulkanCommands {
         }
     } // unnamed namespace
 
+    void setupDynamicStates(VulkanContext &ctx) {
+        VkCommandBuffer cmd = VulkanCore::getCurrentFrame(ctx).mainCommandBuffer;
+
+        vkCmdSetViewport(cmd, 0, 1, &ctx.dynamicStates.viewport);
+        vkCmdSetScissor(cmd, 0, 1, &ctx.dynamicStates.scissor);
+        vkCmdSetLineWidth(cmd, Config::standardLineWidth);
+        vkCmdSetCullMode(cmd, VK_CULL_MODE_NONE);
+    }
+
+
     void init(VulkanContext &ctx) {
         const VkCommandPoolCreateInfo commandPoolInfo = makeCommandPoolInfo(
             ctx.queueFamilyIndex, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
@@ -41,7 +51,7 @@ namespace VulkanCommands {
         }
     }
 
-    void cleanup(VulkanContext &ctx) {
+    void destroy(VulkanContext &ctx) {
         for (size_t i = 0; i < Config::frameOverlap; i++) {
             vkDestroyCommandPool(ctx.device, ctx.frameStates[i].commandPool, nullptr);
         }

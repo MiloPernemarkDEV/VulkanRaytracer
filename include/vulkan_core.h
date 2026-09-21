@@ -50,7 +50,7 @@ struct VulkanContext {
 
 namespace VulkanCore {
 	void init(VulkanContext& ctx);
-	void cleanup(VulkanContext& ctx);
+	void destroy(VulkanContext& ctx);
 	void recreateSwapchain(VulkanContext& ctx);
 
 	[[nodiscard]] FrameState& getCurrentFrame(VulkanContext& ctx);

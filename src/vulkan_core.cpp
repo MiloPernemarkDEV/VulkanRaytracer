@@ -409,7 +409,7 @@ namespace VulkanCore {
 		createSwapchain(ctx);
 	}
 
-	void cleanup(VulkanContext& ctx) {
+	void destroy(VulkanContext& ctx) {
 
 		destroyImageViews(ctx);
 		vkDestroySwapchainKHR(ctx.device, ctx.swapchainState.swapchain, nullptr);

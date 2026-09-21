@@ -50,9 +50,8 @@ namespace Renderer {
 				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
 			);
 
-			const float flash = std::abs(std::sin(static_cast<float>(ctx.currentFrame) / 120.0f));
 			const VkClearValue clearValue{
-				.color = {{0.0f, flash, 0.0f, 1.0f}}
+				.color = {{0.015f, 0.02f, 0.04f, 1.0f}}
 			};
 
 			VkRenderingAttachmentInfo colorAttachment{};
@@ -73,7 +72,7 @@ namespace Renderer {
 
 			vkCmdBeginRendering(cmd, &renderingInfo);
 			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, ctx.pipelines.filled);
-			VulkanPipelines::setupDynamicStates(ctx);
+			VulkanCommands::setupDynamicStates(ctx);
 
 			vkCmdDraw(cmd, 3, 1, 0, 0);
 			vkCmdEndRendering(cmd);
@@ -134,8 +133,8 @@ namespace Renderer {
 
 		VulkanPipelines::destroy(ctx);
 		VulkanSync::destroy(ctx);
-		VulkanCommands::cleanup(ctx);
-		VulkanCore::cleanup(ctx);	
+		VulkanCommands::destroy(ctx);
+		VulkanCore::destroy(ctx);
 	}
 
 	void draw(VulkanContext& ctx) {
