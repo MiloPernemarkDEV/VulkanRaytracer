@@ -1,7 +1,6 @@
 #pragma once 
 
-#include <vulkan/vulkan.h>
-#include "vulkan_core.h"
+struct VulkanContext;
 
 namespace Renderer {
 	bool init(VulkanContext& ctx); 

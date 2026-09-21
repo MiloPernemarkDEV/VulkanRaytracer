@@ -4,19 +4,26 @@
 #include "vulkan_commands.h"
 #include "config.h"
 
+struct Pipelines {
+	VkPipelineLayout layout = VK_NULL_HANDLE;
+	VkPipeline filled = VK_NULL_HANDLE;
+	VkPipeline wireframe = VK_NULL_HANDLE;
+	VkPipeline vertex = VK_NULL_HANDLE;
+};
+
 struct FrameState {
-	VkCommandPool commandPool;
-	VkCommandBuffer mainCommandBuffer;
-	VkSemaphore swapchainSemaphore;
-	VkSemaphore renderSemaphore;
-	VkFence renderFence;
+	VkCommandPool commandPool = VK_NULL_HANDLE;
+	VkCommandBuffer mainCommandBuffer = VK_NULL_HANDLE;
+	VkSemaphore swapchainSemaphore = VK_NULL_HANDLE;
+	VkSemaphore renderSemaphore = VK_NULL_HANDLE;
+	VkFence renderFence = VK_NULL_HANDLE;
 };
 
 struct SwapchainState {
 	VkSwapchainKHR swapchain = VK_NULL_HANDLE;
 	std::vector<VkImage> images;
 	std::vector<VkImageView> views;
-	VkExtent2D extent;
+	VkExtent2D extent{};
 	VkFormat imageFormat = VK_FORMAT_UNDEFINED;
 };
 
@@ -25,15 +32,14 @@ struct VulkanContext {
 	VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 	VkDevice device = VK_NULL_HANDLE;
-
 	u32 queueFamilyIndex = UINT32_MAX;
 	VkQueue graphicsQueue = VK_NULL_HANDLE;
-
 	VkSurfaceKHR surface = VK_NULL_HANDLE;
-
-	SwapchainState swapchainState;
+	SwapchainState swapchainState{};
+	u32 swapchainImageIndex{};
 	u32 currentFrame = 0;
-	std::array<FrameState, Config::frameOverlap> frameStates;
+	std::array<FrameState, Config::frameOverlap> frameStates{};
+	Pipelines pipelines{};
 };
 
 namespace VulkanCore {

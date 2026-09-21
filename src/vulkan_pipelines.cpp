@@ -61,6 +61,7 @@ namespace VulkanPipelines {
         scissor.extent = ctx.swapchainState.extent;
 
         VkPipelineViewportStateCreateInfo viewportState{};
+        viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         viewportState.viewportCount = 1;
         viewportState.scissorCount = 1;
 
@@ -116,8 +117,33 @@ namespace VulkanPipelines {
             ctx.device,
             &pipelineLayoutInfo,
             nullptr,
-            &pipelineLayout
-        ), "Failed to create pipeline layout!");
+            &pipelineLayout),
+            "Failed to create pipeline layout!"
+        );
+
+        VkPipelineRenderingCreateInfo renderingInfo{};
+        renderingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+        renderingInfo.colorAttachmentCount = 1;
+        renderingInfo.pColorAttachmentFormats = &ctx.swapchainState.imageFormat;
+
+        VkGraphicsPipelineCreateInfo pipelineInfo{};
+        pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+        pipelineInfo.pNext = &renderingInfo;
+        pipelineInfo.stageCount = static_cast<u32>(shaderStages.size());
+        pipelineInfo.pStages = shaderStages.data();
+        pipelineInfo.pVertexInputState = &vertexInputInfo;
+        pipelineInfo.pInputAssemblyState = &inputAssembly;
+        pipelineInfo.pViewportState = &viewportState;
+        pipelineInfo.pRasterizationState = &rasterizer;
+        pipelineInfo.pMultisampleState = &multisample;
+        pipelineInfo.pColorBlendState = &colorBlending;
+        pipelineInfo.pDynamicState = &dynamicState;
+        pipelineInfo.layout = pipelineLayout;
+        pipelineInfo.renderPass = VK_NULL_HANDLE;
+
+        VK_CHECK(vkCreateGraphicsPipelines(ctx.device, nullptr, 1, &pipelineInfo, nullptr, &ctx.pipelines.filled),
+            "Failed to create pipeline!"
+        );
 
         vkDestroyShaderModule(ctx.device, vertModule, nullptr);
         vkDestroyShaderModule(ctx.device, fragModule, nullptr);
