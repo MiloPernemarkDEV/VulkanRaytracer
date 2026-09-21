@@ -41,16 +41,53 @@ namespace Renderer {
 		}
 
 		void recordCommandBuffer(VulkanContext& ctx, VkCommandBuffer cmd) {
-			VulkanImage::transitionImage(cmd, ctx.swapchainState.images[ctx.swapchainImageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
+			const u32 imageIndex = ctx.swapchainImageIndex;
+
+			VulkanImage::transitionImage(
+				cmd,
+				ctx.swapchainState.images[imageIndex],
+				VK_IMAGE_LAYOUT_UNDEFINED,
+				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+			);
 
 			const float flash = std::abs(std::sin(static_cast<float>(ctx.currentFrame) / 120.0f));
-			const VkClearColorValue clearValue = {{0.0f, flash, 0.0f, 0.0f}};
+			const VkClearValue clearValue{
+				.color = {{0.0f, flash, 0.0f, 1.0f}}
+			};
 
-			constexpr VkImageSubresourceRange clearRange = VulkanImage::makeImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT);
-			vkCmdClearColorImage(cmd, ctx.swapchainState.images[ctx.swapchainImageIndex], VK_IMAGE_LAYOUT_GENERAL, &clearValue, 1, &clearRange);
+			VkRenderingAttachmentInfo colorAttachment{};
+			colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+			colorAttachment.imageView = ctx.swapchainState.views[imageIndex];
+			colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			colorAttachment.clearValue = clearValue;
 
-			VulkanImage::transitionImage(cmd, ctx.swapchainState.images[ctx.swapchainImageIndex], VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-			VK_CHECK(vkEndCommandBuffer(cmd), "Failed to end command buffer!");
+			VkRenderingInfo renderingInfo{};
+			renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+			renderingInfo.renderArea.offset = {0, 0};
+			renderingInfo.renderArea.extent =  ctx.swapchainState.extent;
+			renderingInfo.layerCount = 1;
+			renderingInfo.colorAttachmentCount = 1;
+			renderingInfo.pColorAttachments = &colorAttachment;
+
+			vkCmdBeginRendering(cmd, &renderingInfo);
+			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, ctx.pipelines.filled);
+			VulkanPipelines::setupDynamicStates(ctx);
+
+			vkCmdDraw(cmd, 3, 1, 0, 0);
+			vkCmdEndRendering(cmd);
+
+			VulkanImage::transitionImage(
+				cmd,
+				ctx.swapchainState.images[imageIndex],
+				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+				VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+			);
+
+			VK_CHECK(vkEndCommandBuffer(cmd),
+				"Failed to end command buffer!"
+			);
 		}
 
 		void beginDraw(VulkanContext& ctx, VkCommandBuffer cmd) {

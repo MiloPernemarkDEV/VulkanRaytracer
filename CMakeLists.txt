@@ -28,6 +28,11 @@ add_dependencies(raytracer shaders)
 # Vulkan
 find_package(Vulkan REQUIRED)
 
+set_target_properties(raytracer PROPERTIES
+		RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}"
+)
+
+
 target_compile_definitions(raytracer 
 PRIVATE
 	UNICODE

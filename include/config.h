@@ -25,6 +25,8 @@ namespace Config
     // File Paths & Directories
     // =========================================================================
     constexpr auto assetFolderName = "assets";
+    #define FILLED_PIPELINE_VERT_PATH "shaders/spirv/triangle.vs.spv"
+    #define FILLED_PIPELINE_FRAG_PATH "shaders/spirv/triangle.fs.spv"
 
     // =========================================================================
     // Vulkan & Renderer Settings

@@ -328,6 +328,16 @@ namespace VulkanCore {
 			}
 			ctx.swapchainState.extent = extent;
 
+			ctx.dynamicStates.viewport.x = 0.0f;
+			ctx.dynamicStates.viewport.y = 0.0f;
+			ctx.dynamicStates.viewport.width = static_cast<float>(extent.width);
+			ctx.dynamicStates.viewport.height = static_cast<float>(extent.height);
+			ctx.dynamicStates.viewport.minDepth = 0.0f;
+			ctx.dynamicStates.viewport.maxDepth = 1.0f;
+
+			ctx.dynamicStates.scissor.offset = { 0, 0 };
+			ctx.dynamicStates.scissor.extent = extent;
+
 			VkSwapchainKHR oldSwapchain = ctx.swapchainState.swapchain;
 
 			VkSwapchainCreateInfoKHR info{};
@@ -397,7 +407,6 @@ namespace VulkanCore {
 		pickPhysicalDevice(ctx);
 		createLogicalDevice(ctx);
 		createSwapchain(ctx);
-
 	}
 
 	void cleanup(VulkanContext& ctx) {

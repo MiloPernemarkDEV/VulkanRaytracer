@@ -4,6 +4,11 @@
 #include "vulkan_commands.h"
 #include "config.h"
 
+struct DynamicStates {
+	VkViewport viewport{};
+	VkRect2D scissor{};
+};
+
 struct Pipelines {
 	VkPipelineLayout layout = VK_NULL_HANDLE;
 	VkPipeline filled = VK_NULL_HANDLE;
@@ -40,6 +45,7 @@ struct VulkanContext {
 	u32 currentFrame = 0;
 	std::array<FrameState, Config::frameOverlap> frameStates{};
 	Pipelines pipelines{};
+	DynamicStates dynamicStates{};
 };
 
 namespace VulkanCore {
