@@ -12,6 +12,7 @@ The project is primarily a learning project focused on understanding Vulkan and 
 * [x] Physical/logical device selection
 * [x] Swapchain
 * [x] Command recording and submission
+* [x] Drawing a triangle :)
 
 ## Goals
 
