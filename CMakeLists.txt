@@ -82,7 +82,9 @@ target_sources(raytracer
 		include/shader.h
 		include/ui.h
 		include/math_util.h
+		include/vec2.h
 		include/vec3.h
+		include/vec4.h
 		include/viewport.h
 )
 

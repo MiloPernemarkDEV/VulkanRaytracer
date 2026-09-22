@@ -1,17 +1,17 @@
 #pragma once
 #include "vec3.h"
+#include "vec2.h"
+#include "vec4.h"
 #include <vulkan/vulkan.h>
 #include <array>
-#include <glm/vec2.hpp>
-#include <glm/vec4.hpp>
 
 // defines the vertex struct and functions to describe the vertex stride and the attributes layout
 // tangent and bitangent must exists for normal mapping.
 struct Vertex {
     Vec3 pos;
     Vec3 normal;
-    glm::vec2 uv;
-    glm::vec4 color;
+    Vec2 uv;
+    Vec4 color;
     Vec3 tangent;
     Vec3 bitangent;
 
