@@ -6,11 +6,9 @@
 struct Vec3 {
     float x, y, z;
 
-    FORCE_INLINE constexpr Vec3()
-        : x(0.0f), y(0.0f), z(0.0f) {}
+    FORCE_INLINE constexpr Vec3() : x(0.0f), y(0.0f), z(0.0f) {}
 
-    FORCE_INLINE constexpr Vec3(float x, float y, float z)
-        : x(x), y(y), z(z) {}
+    FORCE_INLINE constexpr Vec3(float x, float y, float z) : x(x), y(y), z(z) {}
 
     static const Vec3 zero;
     static const Vec3 up;
@@ -19,54 +17,53 @@ struct Vec3 {
     static const Vec3 left;
 
     FORCE_INLINE constexpr Vec3 operator+(const Vec3& v) const {
-        return Vec3(x + v.x, y + v.y, z + v.z);
+        return {x + v.x, y + v.y, z + v.z};
     }
 
     FORCE_INLINE constexpr Vec3 operator-(const Vec3& v) const {
-        return Vec3(x - v.x, y - v.y, z - v.z);
+        return {x - v.x, y - v.y, z - v.z};
     }
 
     FORCE_INLINE constexpr Vec3 operator*(const f32 s) const {
-        return Vec3(s * x, s * y, s * z);
+        return {s * x, s * y, s * z};
     }
 
-    FORCE_INLINE constexpr Vec3 normalized() const {
+    [[nodiscard]] FORCE_INLINE constexpr Vec3 normalized() const {
         if (isZero()) {
             return zero;
         }
         const f32 mag = magnitude();
 
-        return Vec3(x / mag, y / mag, z / mag);
+        return {x / mag, y / mag, z / mag};
     }
 
-    FORCE_INLINE constexpr f32 magnitude() const {
-        return pythagoras3(x, y, z);
+    [[nodiscard]] FORCE_INLINE constexpr f32 magnitude() const {
+        return Math::pythagoras3(x, y, z);
     }
 
-    FORCE_INLINE constexpr bool isZero() const {
+    [[nodiscard]] FORCE_INLINE constexpr bool isZero() const {
         return x == 0.0f && y == 0.0f && z == 0.0f;
     }
 
-    FORCE_INLINE constexpr f32 dot(const Vec3& v) const {
+    [[nodiscard]] FORCE_INLINE constexpr f32 dot(const Vec3& v) const {
         return x * v.x + y * v.y + z * v.z;
     }
 
-    FORCE_INLINE constexpr Vec3 cross(const Vec3& v) const {
-        return Vec3(
+    [[nodiscard]] FORCE_INLINE constexpr Vec3 cross(const Vec3& v) const {
+        return {
             y * v.z - z * v.y,
             z * v.x - x * v.z,
             x * v.y - y * v.x
-        );
+        };
     }
 
-    FORCE_INLINE constexpr f32 cos(const Vec3& v) const {
+    [[nodiscard]] FORCE_INLINE constexpr f32 cos(const Vec3& v) const {
         return this->dot(v) / this->magnitude() / v.magnitude();
     }
 
-    FORCE_INLINE constexpr bool hasSimilarDirection(const Vec3& v, const float maxAngleRadians) const {
+    [[nodiscard]] FORCE_INLINE constexpr bool hasSimilarDirection(const Vec3& v, const float maxAngleRadians) const {
         return normalized().dot(v.normalized()) >= std::cos(maxAngleRadians);
     }
-
 };
 
 constexpr Vec3 Vec3::zero    = Vec3(0.0f, 0.0f, 0.0f);

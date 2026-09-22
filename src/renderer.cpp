@@ -8,9 +8,48 @@
 #include "vulkan_pipelines.h"
 #include <imgui_impl_vulkan.h>
 #include "ui.h"
+#include "viewport.h"
 
 namespace Renderer {
 	namespace {
+		void renderViewport(VulkanContext& ctx, VkCommandBuffer cmd, ViewportTarget& vp) {
+			VulkanImage::transitionImage(cmd, vp.image, VK_IMAGE_LAYOUT_UNDEFINED,
+				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+			const VkClearValue clear{ .color = {{0.015f, 0.02f, 0.04f, 1.0f}} };
+
+			VkRenderingAttachmentInfo color{};
+			color.sType       = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+			color.imageView   = vp.view;  // not swapchain
+			color.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			color.loadOp      = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			color.storeOp     = VK_ATTACHMENT_STORE_OP_STORE;
+			color.clearValue  = clear;
+			VkRenderingInfo info{};
+			info.sType                = VK_STRUCTURE_TYPE_RENDERING_INFO;
+			info.renderArea.extent    = vp.extent;
+			info.layerCount           = 1;
+			info.colorAttachmentCount = 1;
+			info.pColorAttachments    = &color;
+			vkCmdBeginRendering(cmd, &info);
+			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, ctx.pipelines.filled);
+			ctx.dynamicStates.viewport = {
+				.x = 0.f, .y = 0.f,
+				.width = static_cast<float>(vp.extent.width), .height = static_cast<float>(vp.extent.height),
+				.minDepth = 0.f, .maxDepth = 1.f
+			};
+			ctx.dynamicStates.scissor = { {0, 0}, vp.extent };
+			VulkanCommands::setupDynamicStates(ctx);
+			vkCmdDraw(cmd, 3, 1, 0, 0);
+			vkCmdEndRendering(cmd);
+			// ImGui samples this in SHADER_READ_ONLY (must match AddTexture).
+			VulkanImage::transitionImage(
+				cmd, vp.image,
+				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+			);
+		}
+
 		void presentImage(VulkanContext& ctx) {
 			VkPresentInfoKHR presentInfo{};
 			presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -44,56 +83,45 @@ namespace Renderer {
 
 		void recordCommandBuffer(VulkanContext& ctx, VkCommandBuffer cmd) {
 			const u32 imageIndex = ctx.swapchainImageIndex;
+			ViewportTarget& vp = ctx.viewport;
 
-			VulkanImage::transitionImage(
-				cmd,
-				ctx.swapchainState.images[imageIndex],
+			renderViewport(ctx, cmd, vp);
+
+			VulkanImage::transitionImage(cmd,ctx.swapchainState.images[imageIndex],
 				VK_IMAGE_LAYOUT_UNDEFINED,
 				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
 			);
 
-			const VkClearValue clearValue{
-				.color = {{0.015f, 0.02f, 0.04f, 1.0f}}
-			};
+			const VkClearValue clear{ .color = {{0.12f, 0.12f, 0.14f, 1.00f}} };
 
-			VkRenderingAttachmentInfo colorAttachment{};
-			colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-			colorAttachment.imageView = ctx.swapchainState.views[imageIndex];
-			colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-			colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-			colorAttachment.clearValue = clearValue;
+			VkRenderingAttachmentInfo color{};
+			color.sType       = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+			color.imageView   = ctx.swapchainState.views[imageIndex];
+			color.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			color.loadOp      = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			color.storeOp     = VK_ATTACHMENT_STORE_OP_STORE;
+			color.clearValue  = clear;
 
-			VkRenderingInfo renderingInfo{};
-			renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
-			renderingInfo.renderArea.offset = {0, 0};
-			renderingInfo.renderArea.extent =  ctx.swapchainState.extent;
-			renderingInfo.layerCount = 1;
-			renderingInfo.colorAttachmentCount = 1;
-			renderingInfo.pColorAttachments = &colorAttachment;
+			VkRenderingInfo info{};
+			info.sType                = VK_STRUCTURE_TYPE_RENDERING_INFO;
+			info.renderArea.extent    = ctx.swapchainState.extent;
+			info.layerCount           = 1;
+			info.colorAttachmentCount = 1;
+			info.pColorAttachments    = &color;
 
-			vkCmdBeginRendering(cmd, &renderingInfo);
-			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, ctx.pipelines.filled);
-			VulkanCommands::setupDynamicStates(ctx);
-
-			vkCmdDraw(cmd, 3, 1, 0, 0);
-
+			vkCmdBeginRendering(cmd, &info);git
 			UI::end(cmd);
 			vkCmdEndRendering(cmd);
 
-			VulkanImage::transitionImage(
-				cmd,
-				ctx.swapchainState.images[imageIndex],
+			VulkanImage::transitionImage(cmd, ctx.swapchainState.images[imageIndex],
 				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 				VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
 			);
 
-			VK_CHECK(vkEndCommandBuffer(cmd),
-				"Failed to end command buffer!"
-			);
+			VK_CHECK(vkEndCommandBuffer(cmd), "Failed to end command buffer!");
 		}
 
-		void beginDraw(VulkanContext& ctx, VkCommandBuffer cmd) {
+		bool beginDraw(VulkanContext& ctx, VkCommandBuffer cmd) {
 			VK_CHECK(vkWaitForFences(ctx.device, 1, &VulkanCore::getCurrentFrame(ctx).renderFence, true, secondsToNano(1)),
 			"Failed to wait for fences");
 
@@ -106,7 +134,7 @@ namespace Renderer {
 
 			if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR) {
 				VulkanCore::recreateSwapchain(ctx);
-				return;
+				return false;
 			}
 
 			if (acquireResult != VK_SUCCESS && acquireResult != VK_SUBOPTIMAL_KHR) {
@@ -119,6 +147,7 @@ namespace Renderer {
 
 			constexpr VkCommandBufferBeginInfo beginInfo = VulkanCommands::makeCommandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 			VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo), "Failed to begin command buffer!");
+			return true;
 		}
 	}
 
@@ -128,11 +157,14 @@ namespace Renderer {
 		VulkanSync::init(ctx);
 		VulkanPipelines::init(ctx);
 
-
 		return true	;
 	}
 
-	void terminate(VulkanContext& ctx) {
+	void prepareFrame(VulkanContext& ctx) {
+		Viewport::ensureViewportSize(ctx, ctx.viewport);
+	}
+
+	void destroy(VulkanContext& ctx) {
 		vkDeviceWaitIdle(ctx.device);
 
 		VulkanPipelines::destroy(ctx);
@@ -144,7 +176,9 @@ namespace Renderer {
 	void draw(VulkanContext& ctx) {
 		VkCommandBuffer cmd = VulkanCore::getCurrentFrame(ctx).mainCommandBuffer;
 
-		beginDraw(ctx, cmd);
+		if (!beginDraw(ctx, cmd)) {
+			return;
+		}
 
 		recordCommandBuffer(ctx, cmd);
 

@@ -429,4 +429,18 @@ namespace VulkanCore {
 		return ctx.frameStates[ctx.currentFrame % Config::frameOverlap];
 	}
 
+	u32 findMemoryType(VkPhysicalDevice physicalDevice, u32 typeBits, VkMemoryPropertyFlags required) {
+		VkPhysicalDeviceMemoryProperties props{};
+		vkGetPhysicalDeviceMemoryProperties(physicalDevice, &props);
+
+		for (u32 i = 0; i < props.memoryTypeCount; i++) {
+			const bool allowed    = (typeBits & (1u << i)) != 0;
+			const bool hasFlags   = (props.memoryTypes[i].propertyFlags & required) == required;
+			if (allowed && hasFlags) {
+				return i;
+			}
+		}
+
+		throw std::runtime_error("No matching memory type");
+	}
 } // namespace VulkanCore

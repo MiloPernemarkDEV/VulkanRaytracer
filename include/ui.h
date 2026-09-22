@@ -1,14 +1,15 @@
 #pragma once
 
 struct VulkanContext;
+struct ViewportTarget;
 
 namespace UI {
 #ifdef _WIN32
     void init(HWND hwnd, VulkanContext& ctx);
     void begin();
-    void draw();
+    void draw(ViewportTarget &target);
     void end(VkCommandBuffer commandBuffer);
-    void shutdown(VulkanContext& ctx);
+    void destroy(VulkanContext& ctx);
 #else
 
 

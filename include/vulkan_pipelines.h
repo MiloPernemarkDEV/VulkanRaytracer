@@ -11,16 +11,16 @@ namespace VulkanPipelines {
     };
 
     struct Descriptor {
-        const char* vertexShader = nullptr;
-        const char* fragmentShader = nullptr;
+        const char*         vertexShader   = nullptr;
+        const char*         fragmentShader = nullptr;
 
-        VkPolygonMode polygonMode = VK_POLYGON_MODE_FILL;
-        VkFrontFace frontFace = VK_FRONT_FACE_CLOCKWISE;
-        VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        VkPolygonMode       polygonMode    = VK_POLYGON_MODE_FILL;
+        VkFrontFace         frontFace      = VK_FRONT_FACE_CLOCKWISE;
+        VkPrimitiveTopology topology       = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
-        bool depthTest = false;
-        bool depthWrite = false;
-        bool blending = false;
+        bool                depthTest      = false;
+        bool                depthWrite     = false;
+        bool                blending       = false;
     };
 
     void init(VulkanContext& ctx);

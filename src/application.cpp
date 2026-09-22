@@ -5,6 +5,8 @@
 #include "renderer.h"
 #include "arena.h"
 #include "ui.h"
+#include "viewport.h"
+#include "vulkan_core.h"
 
 #ifdef _WIN32
 Application::Application() {
@@ -21,7 +23,7 @@ bool Application::init(int nCmdShow) {
 	}
 
 	UI::init(Window::getHandle(), *vulkanContext);
-	
+	Viewport::createViewportTarget(*vulkanContext, vulkanContext->viewport, 1, 1);
 
 	return true;
 }
@@ -35,8 +37,10 @@ void Application::run()
 			continue;
 		}
 
+		Renderer::prepareFrame(*vulkanContext);
+
 		UI::begin();
-		UI::draw();
+		UI::draw(vulkanContext->viewport);
 
 		Renderer::draw(*vulkanContext);
 	}
@@ -44,8 +48,10 @@ void Application::run()
 
 void Application::end()
 {
-	UI::shutdown(*vulkanContext);
-	Renderer::terminate(*vulkanContext);
+	vkDeviceWaitIdle(vulkanContext->device);
+	Viewport::destroyViewportTarget(*vulkanContext, vulkanContext->viewport);
+	UI::destroy(*vulkanContext);
+	Renderer::destroy(*vulkanContext);
 }
 
 #else 

@@ -3,7 +3,10 @@
 #include "window.h"
 #include "windowsx.h"
 #include "config.h"
-#include <algorithm>
+#include "math_util.h"
+#include <imgui_impl_win32.h>
+
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 static HWND g_hWnd;
 static HINSTANCE g_hInstance;
@@ -20,6 +23,10 @@ namespace Window
 	}
 
 	LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+		if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam)) {
+			return true;
+		}
+
 		switch (msg) {
 			HANDLE_MSG(hwnd, WM_DESTROY, OnDestroy);
 
@@ -133,11 +140,11 @@ namespace Window
 
 		VkExtent2D extent{ width, height };
 
-		extent.width = clamp(extent.width,
+		extent.width = Math::clamp(extent.width,
 			capabilities.minImageExtent.width,
 			capabilities.maxImageExtent.width);
 
-		extent.height = clamp(extent.height,
+		extent.height = Math::clamp(extent.height,
 			capabilities.minImageExtent.height,
 			capabilities.maxImageExtent.height);
 

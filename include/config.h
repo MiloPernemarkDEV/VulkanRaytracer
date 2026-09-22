@@ -70,4 +70,6 @@ namespace Config
         VK_DYNAMIC_STATE_CULL_MODE,
         VK_DYNAMIC_STATE_LINE_WIDTH
     };
+
+    constexpr auto uiMainFontPath = "assets/fonts/Roboto-Regular.ttf";
 }
