@@ -104,6 +104,8 @@ target_sources(raytracer
 		include/vulkan_image.h
 		include/shader.h
 		include/ui.h
+		include/math_util.h
+		include/vec3.h
 )
 
 target_include_directories(raytracer

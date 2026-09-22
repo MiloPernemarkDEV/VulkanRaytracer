@@ -15,13 +15,6 @@ constexpr int operator""_MB(unsigned long long int x) {
 	return x * 1024 * 1024;
 }
 
-template <typename T>
-constexpr const T& clamp(const T& v, const T& lo, const T& hi) {
-	if (v < lo) return lo;
-	if (hi < v) return hi;
-	return v;
-}
-
 constexpr u64 secondsToNano(u64 seconds) {
     return seconds * 1000000000ULL;
 }
@@ -32,3 +25,11 @@ constexpr u64 secondsToNano(u64 seconds) {
             throw std::runtime_error(errormsg); \
         } \
     } while (0)
+
+#if defined(_MSC_VER)
+#define FORCE_INLINE __forceinline
+#elif defined(__GNUC__) || defined(__clang__)
+#define FORCE_INLINE inline __attribute__((always_inline))
+#else
+#define FORCE_INLINE inline
+#endif
