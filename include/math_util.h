@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include "defines.h"
+#include <concepts>
 
 namespace Math {
     template <typename T>
@@ -11,28 +12,19 @@ namespace Math {
         return v;
     }
 
-    constexpr s32 pythagoras2(const s32 a, const s32 b) {
-        return static_cast<s32>(std::sqrt(a * a + b * b));
-    }
-
-    constexpr f32 pythagoras2(const f32 a, const f32 b) {
+    template<std::floating_point T>
+    constexpr T pythagoras2(const T a, const T b) {
         return std::sqrt(a * a + b * b);
     }
 
-    constexpr f64 pythagoras2(const f64 a, const f64 b) {
-        return std::sqrt(a * a + b * b);
-    }
-
-    constexpr s32 pythagoras3(const s32 a, const s32 b, const s32 c) {
-        return static_cast<s32>(std::sqrt(a * a + b * b + c * c));
-    }
-
-    constexpr f32 pythagoras3(const f32 a, const f32 b, const f32 c) {
+    template<std::floating_point T>
+    constexpr T pythagoras3(const T a, const T b, const T c) {
         return std::sqrt(a * a + b * b + c * c);
     }
 
-    constexpr f64 pythagoras3(const f64 a, const f64 b, const f64 c) {
-        return std::sqrt(a * a + b * b + c * c);
+    template<std::floating_point T>
+    constexpr T lerp(T from, T to, T alpha) {
+        return (1 - alpha) * from + alpha * to;
     }
 }
 

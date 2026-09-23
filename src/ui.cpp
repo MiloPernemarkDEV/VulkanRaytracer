@@ -10,6 +10,7 @@
 #include "vulkan_core.h"
 #include "IconsFontAwesome6.h"
 #include "viewport.h"
+#include "vec4.h"
 
 namespace UI {
     namespace {
@@ -128,7 +129,7 @@ namespace UI {
 
             style.Colors[ImGuiCol_Text]                  = ImVec4(0.86f, 0.86f, 0.90f, 1.00f);
             style.Colors[ImGuiCol_TextDisabled]          = ImVec4(0.50f, 0.50f, 0.55f, 1.00f);
-            style.Colors[ImGuiCol_WindowBg]              = ImVec4(0.12f, 0.12f, 0.14f, 1.00f);
+            style.Colors[ImGuiCol_WindowBg]              = Config::windowBackgroundColorImGui();
             style.Colors[ImGuiCol_ChildBg]               = ImVec4(0.10f, 0.10f, 0.12f, 1.00f);
             style.Colors[ImGuiCol_PopupBg]               = ImVec4(0.14f, 0.14f, 0.17f, 0.98f);
             style.Colors[ImGuiCol_Border]                = ImVec4(0.25f, 0.24f, 0.29f, 0.80f);

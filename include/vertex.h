@@ -8,12 +8,12 @@
 // defines the vertex struct and functions to describe the vertex stride and the attributes layout
 // tangent and bitangent must exists for normal mapping.
 struct Vertex {
-    Vec3 pos;
-    Vec3 normal;
-    Vec2 uv;
-    Vec4 color;
-    Vec3 tangent;
-    Vec3 bitangent;
+    Math::vec3 pos;
+    Math::vec3 normal;
+    Math::Vec2 uv;
+    Math::vec4 color;
+    Math::vec3 tangent;
+    Math::vec3 bitangent;
 
     constexpr static VkVertexInputBindingDescription getBindingDescription() {
         VkVertexInputBindingDescription description = {};

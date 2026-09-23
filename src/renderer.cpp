@@ -16,7 +16,7 @@ namespace Renderer {
 			VulkanImage::transitionImage(cmd, vp.image, VK_IMAGE_LAYOUT_UNDEFINED,
 				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-			const VkClearValue clear{ .color = {{0.015f, 0.02f, 0.04f, 1.0f}} };
+			constexpr VkClearValue clear = VulkanCore::vec4ToClearValue(Config::editorBackgroundColor());
 
 			VkRenderingAttachmentInfo color{};
 			color.sType       = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
@@ -92,7 +92,7 @@ namespace Renderer {
 				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
 			);
 
-			const VkClearValue clear{ .color = {{0.12f, 0.12f, 0.14f, 1.00f}} };
+			constexpr VkClearValue clear = VulkanCore::vec4ToClearValue(Config::editorBackgroundColor());
 
 			VkRenderingAttachmentInfo color{};
 			color.sType       = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;

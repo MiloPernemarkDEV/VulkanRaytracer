@@ -68,4 +68,10 @@ namespace VulkanCore {
 
 	[[nodiscard]] FrameState& getCurrentFrame(VulkanContext& ctx);
     u32 findMemoryType(VkPhysicalDevice physicalDevice, u32 typeBits, VkMemoryPropertyFlags required);
+
+    FORCE_INLINE constexpr VkClearValue vec4ToClearValue(const Math::vec4& color) {
+        return VkClearValue{
+            .color = {{ color.x, color.y, color.z, color.w }}
+        };
+    }
 }

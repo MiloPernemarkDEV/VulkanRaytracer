@@ -1,9 +1,10 @@
 #pragma once
 
 #include "defines.h"
-
 #include <array>
 #include <vulkan/vulkan.h>
+#include "vec4.h"
+#include <imgui.h>
 
 namespace Config
 {
@@ -72,4 +73,16 @@ namespace Config
     };
 
     constexpr auto uiMainFontPath = "assets/fonts/Roboto-Regular.ttf";
+
+    // =========================================================================
+    // Editor style
+    // =========================================================================
+    constexpr Math::vec4 editorBackgroundColor() {
+        return {0.015f, 0.02f, 0.04f, 1.0f};
+    }
+
+    constexpr ImVec4 windowBackgroundColorImGui() {
+        constexpr auto c = editorBackgroundColor();
+        return {c.x, c.y, c.z, c.w};
+    }
 }
