@@ -3,6 +3,7 @@
 #include "defines.h"
 #include "vulkan_commands.h"
 #include "config.h"
+#include <vk_mem_alloc.h>
 
 struct ViewportTarget {
     VkImage         image      = VK_NULL_HANDLE;
@@ -52,13 +53,14 @@ struct VulkanContext {
     u32                                          queueFamilyIndex    = UINT32_MAX;
     VkQueue                                      graphicsQueue       = VK_NULL_HANDLE;
     VkSurfaceKHR                                 surface             = VK_NULL_HANDLE;
-    SwapchainState                               swapchainState{};
-    u32                                          swapchainImageIndex{};
+    std::array<FrameState, Config::frameOverlap> frameStates         {};
+    Pipelines                                    pipelines           {};
+    DynamicStates                                dynamicStates       {};
+    ViewportTarget                               viewport            {};
+    SwapchainState                               swapchainState      {};
+    u32                                          swapchainImageIndex = UINT32_MAX ;
     u32                                          currentFrame        = 0;
-    std::array<FrameState, Config::frameOverlap> frameStates{};
-    Pipelines                                    pipelines{};
-    DynamicStates                                dynamicStates{};
-    ViewportTarget                               viewport{};
+    VmaAllocator                                 allocator           = nullptr;
 };
 
 namespace VulkanCore {

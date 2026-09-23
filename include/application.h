@@ -1,13 +1,13 @@
-#include <iostream>
+#pragma once
 #include "vulkan_core.h"
 
 #ifdef _WIN32 
 class Application {
 public:
 	Application();
-	bool init(int nCmdShow); 
-	void run(); 
-	void end(); 
+	[[nodiscard]] bool init(int nCmdShow) const;
+	void run() const;
+	void end() const;
 private:
 	VulkanContext* vulkanContext = nullptr;
 };

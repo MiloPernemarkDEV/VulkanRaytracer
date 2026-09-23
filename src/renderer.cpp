@@ -109,7 +109,7 @@ namespace Renderer {
 			info.colorAttachmentCount = 1;
 			info.pColorAttachments    = &color;
 
-			vkCmdBeginRendering(cmd, &info);git
+			vkCmdBeginRendering(cmd, &info);
 			UI::end(cmd);
 			vkCmdEndRendering(cmd);
 
@@ -160,7 +160,7 @@ namespace Renderer {
 		return true	;
 	}
 
-	void prepareFrame(VulkanContext& ctx) {
+	void prepeareFrame(VulkanContext& ctx) {
 		Viewport::ensureViewportSize(ctx, ctx.viewport);
 	}
 

@@ -9,7 +9,6 @@ namespace Math {
         float x, y, z;
 
         FORCE_INLINE constexpr vec3() : x(0.0f), y(0.0f), z(0.0f) {}
-
         FORCE_INLINE constexpr vec3(float x, float y, float z) : x(x), y(y), z(z) {}
 
         static const vec3 zero;
@@ -67,9 +66,22 @@ namespace Math {
             return normalized().dot(v.normalized()) >= std::cos(maxAngleRadians);
         }
 
-        template <std::floating_point T>
+        template<std::floating_point T>
         FORCE_INLINE constexpr vec3 lerp(const vec3& to, T alpha) {
+            vec3 r = *this;
+            r.x = Math::lerp(r.x, to.x, alpha);
+            r.y = Math::lerp(r.y, to.y, alpha);
+            r.z = Math::lerp(r.z, to.z, alpha);
+            return r;
+        }
 
+        template<std::floating_point T>
+        FORCE_INLINE constexpr vec3 clamp(T min, T max) {
+            return vec3(
+                Math::clamp(x, min, max),
+                Math::clamp(y, min, max),
+                Math::clamp(z, min, max)
+            );
         }
     };
 }

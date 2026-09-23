@@ -17,11 +17,12 @@ find_package(Vulkan REQUIRED)
 add_subdirectory(shaders)
 add_subdirectory(third_party)
 
-target_link_libraries(imgui PUBLIC Vulkan::Vulkan)
+target_link_libraries(third_party PUBLIC Vulkan::Vulkan)
 
 add_executable(raytracer WIN32
 		src/vulkan_pipelines.cpp
 		src/ui.cpp
+		src/vulkan_buffers.cpp
 )
 
 add_dependencies(raytracer shaders)
@@ -37,6 +38,7 @@ target_compile_definitions(raytracer
 		WIN32_LEAN_AND_MEAN
 		GLM_ENABLE_EXPERIMENTAL
 		_CRT_USE_BUILTIN_OFFSETOF
+		NOMINMAX
 )
 
 target_precompile_headers(raytracer
@@ -59,6 +61,7 @@ target_sources(raytracer
 		src/shader.cpp
 		src/ui.cpp
 		src/viewport.cpp
+		src/vulkan_buffers.cpp
 
 		PUBLIC
 		FILE_SET includes
@@ -86,6 +89,7 @@ target_sources(raytracer
 		include/vec3.h
 		include/vec4.h
 		include/viewport.h
+		include/vulkan_buffers.h
 )
 
 target_include_directories(raytracer
@@ -95,5 +99,5 @@ target_include_directories(raytracer
 target_link_libraries(raytracer
 		PRIVATE
 		Vulkan::Vulkan
-		imgui
+		third_party
 )

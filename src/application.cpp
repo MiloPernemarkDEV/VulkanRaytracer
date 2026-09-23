@@ -13,7 +13,7 @@ Application::Application() {
 	vulkanContext = GetArena().add<VulkanContext>(); 
 }
 
-bool Application::init(int nCmdShow) {
+bool Application::init(int nCmdShow) const {
 	if (!Window::create(nCmdShow)) {
 		return false;
 	}
@@ -29,15 +29,14 @@ bool Application::init(int nCmdShow) {
 }
 
 
-void Application::run()
-{
+void Application::run() const {
 	while (!Window::close()) {
 		Window::pollEvents();
 		if (Window::close() || Window::isMinimized()) {
 			continue;
 		}
 
-		Renderer::prepareFrame(*vulkanContext);
+		Renderer::prepeareFrame(*vulkanContext);
 
 		UI::begin();
 		UI::draw(vulkanContext->viewport);
@@ -46,8 +45,7 @@ void Application::run()
 	}
 }
 
-void Application::end()
-{
+void Application::end() const {
 	vkDeviceWaitIdle(vulkanContext->device);
 	Viewport::destroyViewportTarget(*vulkanContext, vulkanContext->viewport);
 	UI::destroy(*vulkanContext);

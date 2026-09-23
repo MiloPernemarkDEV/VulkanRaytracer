@@ -28,6 +28,7 @@ namespace Config
     constexpr auto assetFolderName = "assets";
     #define FILLED_PIPELINE_VERT_PATH "shaders/spirv/triangle.vs.spv"
     #define FILLED_PIPELINE_FRAG_PATH "shaders/spirv/triangle.fs.spv"
+    constexpr auto uiMainFontPath = "assets/fonts/Roboto-Regular.ttf";
 
     // =========================================================================
     // Vulkan & Renderer Settings
@@ -71,11 +72,9 @@ namespace Config
         VK_DYNAMIC_STATE_CULL_MODE,
         VK_DYNAMIC_STATE_LINE_WIDTH
     };
-
-    constexpr auto uiMainFontPath = "assets/fonts/Roboto-Regular.ttf";
-
+    
     // =========================================================================
-    // Editor style
+    // Editor styling
     // =========================================================================
     constexpr Math::vec4 editorBackgroundColor() {
         return {0.015f, 0.02f, 0.04f, 1.0f};

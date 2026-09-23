@@ -7,7 +7,6 @@ namespace Math {
         float x, y, z, w;
 
         FORCE_INLINE constexpr vec4() : x(0.0f), y(0.0f), z(0.0f), w(0.0f) {}
-
         FORCE_INLINE constexpr vec4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
 
         FORCE_INLINE constexpr vec4 operator+(const vec4& v) const {
