@@ -13,6 +13,7 @@ The project is primarily a learning project focused on understanding Vulkan and 
 * [x] Swapchain
 * [x] Command recording and submission
 * [x] Drawing a triangle :)
+* [x] Viewport with ImGui
 
 ## Goals
 
